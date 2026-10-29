@@ -635,6 +635,31 @@ A cache point with nothing before it in the same message is silently ignored.
 
 ---
 
+## Admin API (`audacityadmin`)
+
+Run your organization from code — members, teams, budgets, API keys, settings, routing,
+GPU machines, containers and training — with the same operations the portal and the
+AI Reserve MCP server offer. It authenticates with a **management token**
+(`aireserve_mcp_…`, from `aireserve login`, an MCP client's Authenticate step, or the portal's
+Management Keys), never an inference key, and acts as that token's owner.
+
+```go
+import "github.com/Audacity-Investments/audacity-sdk-go/audacityadmin"
+
+admin, err := audacityadmin.New(audacityadmin.Options{ManagementToken: os.Getenv("AIRESERVE_MCP_TOKEN")})
+if err != nil { log.Fatal(err) }
+
+users, err := admin.Members.ListOrgUsers(ctx, nil)
+key, err := admin.ApiKeys.CreateClientApiKey(ctx, map[string]any{"name": "CI pipeline"})
+fmt.Println(key.Secret) // shown once; key.Sensitive == true
+ops, err := admin.Ops(ctx) // what this token may call, filtered by role
+```
+
+Every operation returns an `*Outcome` (`OK`, `Summary`, `Message`, `Data`, `Secret`,
+`Sensitive`); refusals, `401` and `429` return an `*audacityadmin.Error` with the server's
+`Code`. Input fields are listed in each method's doc comment; the package is generated from the
+gateway's operation registry. See https://docs.aireserve.com/capabilities/admin-api.
+
 ## Options reference
 
 ```go
