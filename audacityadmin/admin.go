@@ -58,7 +58,7 @@ type CatalogEntry struct {
 }
 
 // Error is a refusal or transport failure. Code is the server's refusal code
-// (unknown_op, not_allowed, invalid_input, target_changed, …), "unauthorized",
+// (unknown_op, not_allowed, insufficient_scope, invalid_input, target_changed, …), "unauthorized",
 // "rate_limited", "http_error" or "network_error".
 type Error struct {
 	Code              string
@@ -390,7 +390,7 @@ func (a *BillingAdmin) GenerateCarrReport(ctx context.Context, input map[string]
 	return a.c.call(ctx, "generate_carr_report", input)
 }
 
-// GetLedgerBalance — Ledger rollup — opening/closing balance, additions, all-time consumption — from the locally mirrored wallet events (stale until synced; admins) (read).
+// GetLedgerBalance — Ledger rollup — opening/closing balance, additions, all-time consumption — from the mirrored wallet events, or the live wallet when nothing has been synced (admins) (read).
 // Input fields:
 //   - clientId: Target organization id — platform admins only; omit otherwise
 func (a *BillingAdmin) GetLedgerBalance(ctx context.Context, input map[string]any) (*Outcome, error) {
@@ -546,7 +546,7 @@ func (a *ContainersAdmin) CreateEcsCluster(ctx context.Context, input map[string
 	return a.c.call(ctx, "create_ecs_cluster", input)
 }
 
-// CreateEcsCredential — Mint an ECS credential — an AWS access key pair for the AWS CLI and SDKs (the pair renders in the portal only, once) (write; high stakes; returns a one-time secret in Secret).
+// CreateEcsCredential — Mint an AWS credential — an AWS access key pair for the AWS CLI and SDKs (the pair renders in the portal only, once) (write; high stakes; returns a one-time secret in Secret).
 // Input fields:
 //   - clientId: Target organization id — platform admins only; omit otherwise
 //   - name (required): What will use it, e.g. "Teja's laptop" or "CI deploys"
@@ -614,7 +614,7 @@ func (a *ContainersAdmin) EnableContainers(ctx context.Context, input map[string
 	return a.c.call(ctx, "enable_containers", input)
 }
 
-// GetContainersAccount — The organization's AWS container account (enabled? lifecycle state, AWS account id) and its ECS credentials (names and key hints, never secrets) (read).
+// GetContainersAccount — The organization's AWS container account (enabled? lifecycle state, AWS account id) and its AWS credentials (names and key hints, never secrets) (read).
 // Input fields:
 //   - clientId: Target organization id — platform admins only; omit otherwise
 func (a *ContainersAdmin) GetContainersAccount(ctx context.Context, input map[string]any) (*Outcome, error) {
@@ -732,7 +732,7 @@ func (a *ContainersAdmin) RestoreSecret(ctx context.Context, input map[string]an
 	return a.c.call(ctx, "restore_secret", input)
 }
 
-// RevokeEcsCredential — Revoke an ECS credential (AWS CLIs and SDKs using it stop reaching the account) (write; high stakes).
+// RevokeEcsCredential — Revoke an AWS credential (AWS CLIs and SDKs using it stop reaching the account) (write; high stakes).
 // Input fields:
 //   - clientId: Target organization id — platform admins only; omit otherwise
 //   - keyId (required): Credential id from get_containers_account
@@ -960,7 +960,7 @@ func (a *ModelsRoutingAdmin) GetModelProviderEndpoints(ctx context.Context, inpu
 //   - clientId: Target organization id — platform admins only; omit otherwise
 //   - modelSelectionLocked: Force every member onto the organization default model
 //   - blockedModelIds: FULL replacement blocklist of chat model ids; [] clears it
-//   - blockedModelMakers: FULL replacement list of blocked model makers (every current and future model of theirs); one of: Anthropic, OpenAI, Google, xAI, ElevenLabs, Perplexity, Amazon, Meta, NVIDIA, Mistral, DeepSeek, Alibaba, Moonshot, Z.ai, MiniMax, ByteDance, Xiaomi, Fireworks AI (Kimi K3 derivative); [] clears it
+//   - blockedModelMakers: FULL replacement list of blocked model makers (every current and future model of theirs); one of: Anthropic, OpenAI, Google, xAI, ElevenLabs, Perplexity, Amazon, Meta, NVIDIA, Mistral, DeepSeek, Alibaba, Moonshot, Z.ai, MiniMax, ByteDance, Xiaomi, Fireworks AI (Kimi K3 derivative), Reflection; [] clears it
 func (a *ModelsRoutingAdmin) SetModelGovernance(ctx context.Context, input map[string]any) (*Outcome, error) {
 	return a.c.call(ctx, "set_model_governance", input)
 }
@@ -979,17 +979,20 @@ func (a *ModelsRoutingAdmin) SetOrgDefaultModel(ctx context.Context, input map[s
 //   - endpointUrl (required): Endpoint implementing the BYO-router contract
 //   - method (required)
 //   - preferences: Extra JSON passed to the endpoint on every routing call
+//   - tuneWith: How the endpoint is tuned: `standard` also sends the org's AI Reserve dial and routing instructions as `preferences.aiReserve` on every call; omitted = `native`, the org's own preferences only
 func (a *ModelsRoutingAdmin) SetRouterEndpoint(ctx context.Context, input map[string]any) (*Outcome, error) {
 	return a.c.call(ctx, "set_router_endpoint", input)
 }
 
-// UpdateProviderPreference — Set which serving provider hosts open-weight models served by several providers: a preset or custom price/latency/reliability balance, provider exclusions, and conversation stickiness (admins) (write; high stakes).
+// UpdateProviderPreference — Choose which provider serves open-weight models several providers host: a preset or custom price/latency/reliability balance, fixed traffic shares, a pinned provider, exclusions, and stickiness (admins) (write; high stakes).
 // Input fields:
 //   - clientId: Target organization id — platform admins only; omit otherwise
-//   - preset (required): Named preset, or custom with explicit weights
+//   - preset (required): Named preset, custom with explicit weights, or split with providerShares
 //   - weights: Required for preset custom; ignored for named presets (their table weights apply)
 //   - excludedProviders: Serving-provider slugs never to serve this org (deepinfra, baseten, together, novita)
 //   - keepConversationOnProvider: Keep a conversation on one provider (recommended); false re-decides every request
+//   - pinnedProvider: Pin a provider: always serve from this slug where it offers the model (the balance decides elsewhere). Omit to keep the org's current pin, null to clear it.
+//   - providerShares: Split traffic (preset split only): fixed shares per provider slug summing to 100, e.g. {"deepinfra": 60, "baseten": 40} (deepinfra, baseten, together, novita)
 func (a *ModelsRoutingAdmin) UpdateProviderPreference(ctx context.Context, input map[string]any) (*Outcome, error) {
 	return a.c.call(ctx, "update_provider_preference", input)
 }
@@ -1193,6 +1196,7 @@ type PersonalAdmin struct{ c *Client }
 // CreateApiKey — Create a personal API key (the secret is shown to the user once, in the card) (write; high stakes; returns a one-time secret in Secret).
 // Input fields:
 //   - name (required): Human-readable key name, e.g. 'CI pipeline'
+//   - category: Tool tag for the key, one of: copilot, cursor, zed, cline, droid, ci
 func (a *PersonalAdmin) CreateApiKey(ctx context.Context, input map[string]any) (*Outcome, error) {
 	return a.c.call(ctx, "create_api_key", input)
 }
@@ -1384,12 +1388,21 @@ func (a *TrainingAdmin) CancelTrainingRun(ctx context.Context, input map[string]
 	return a.c.call(ctx, "cancel_training_run", input)
 }
 
-// CreateTrainingDataset — Create a dataset folder (datasets/<name>/) in the organization's training bucket (write).
+// CreateTrainingDataset — Create a dataset folder (datasets/<name>/) in the organization's training bucket, optionally declaring the shape of each JSONL line (write).
 // Input fields:
 //   - clientId: Target organization id — platform admins only; omit otherwise
 //   - name (required): Folder name: lowercase letters, digits, hyphens
+//   - format: chat ({"messages":[…]}), instruction ({"prompt","completion"}) or text ({"text"}); omit to let validation detect it
 func (a *TrainingAdmin) CreateTrainingDataset(ctx context.Context, input map[string]any) (*Outcome, error) {
 	return a.c.call(ctx, "create_training_dataset", input)
+}
+
+// DeleteTrainingDataset — Delete a dataset folder and every file in it (refused while a run references it) (write; high stakes).
+// Input fields:
+//   - clientId: Target organization id — platform admins only; omit otherwise
+//   - datasetId (required): Dataset id or folder name
+func (a *TrainingAdmin) DeleteTrainingDataset(ctx context.Context, input map[string]any) (*Outcome, error) {
+	return a.c.call(ctx, "delete_training_dataset", input)
 }
 
 // DeployTrainingModel — Serve a trained model on a dedicated endpoint (per hour); serverless is not available for trained adapters yet (write; high stakes).
@@ -1402,7 +1415,7 @@ func (a *TrainingAdmin) DeployTrainingModel(ctx context.Context, input map[strin
 	return a.c.call(ctx, "deploy_training_model", input)
 }
 
-// EnableTrainingAccount — Enable the AWS hub for training: create the organization's own AWS account (idempotent; the training bucket is vended in it) (write; high stakes).
+// EnableTrainingAccount — Create the organization's own AWS account and the training bucket inside it (idempotent; a few minutes) (write; high stakes).
 // Input fields:
 //   - clientId: Target organization id — platform admins only; omit otherwise
 func (a *TrainingAdmin) EnableTrainingAccount(ctx context.Context, input map[string]any) (*Outcome, error) {
@@ -1417,7 +1430,7 @@ func (a *TrainingAdmin) GetTrainingRun(ctx context.Context, input map[string]any
 	return a.c.call(ctx, "get_training_run", input)
 }
 
-// GetTrainingUploadRecipe — The exact aws s3 cp / sync lines to put chat-format JSONL into a dataset folder, and the data format (read).
+// GetTrainingUploadRecipe — The exact commands to put JSONL into a dataset folder (aws s3 cp/sync, s3api multipart, boto3, s5cmd) and the line format the folder expects (read).
 // Input fields:
 //   - clientId: Target organization id — platform admins only; omit otherwise
 //   - datasetId (required): Dataset id or folder name
@@ -1476,6 +1489,17 @@ func (a *TrainingAdmin) StartTrainingRun(ctx context.Context, input map[string]a
 	return a.c.call(ctx, "start_training_run", input)
 }
 
+// StartTrainingUpload — Start a multipart upload of one file into a dataset folder: returns signed part URLs to PUT the bytes to (never through AI Reserve) (write).
+// Input fields:
+//   - clientId: Target organization id — platform admins only; omit otherwise
+//   - datasetId (required): Dataset id or folder name
+//   - filename (required)
+//   - bytes (required): Exact file size in bytes
+//   - partSize
+func (a *TrainingAdmin) StartTrainingUpload(ctx context.Context, input map[string]any) (*Outcome, error) {
+	return a.c.call(ctx, "start_training_upload", input)
+}
+
 // StopTrainingDeployment — Stop serving a trained model (ends hourly billing) (write; high stakes).
 // Input fields:
 //   - clientId: Target organization id — platform admins only; omit otherwise
@@ -1484,12 +1508,13 @@ func (a *TrainingAdmin) StopTrainingDeployment(ctx context.Context, input map[st
 	return a.c.call(ctx, "stop_training_deployment", input)
 }
 
-// ValidateTrainingDataset — Pin and validate a dataset's training file (chat JSONL); produces the example and token counts a quote prices from (write).
+// ValidateTrainingDataset — Pin and validate a dataset's training file (chat, prompt/completion or text JSONL); produces the example and token counts a quote prices from (write).
 // Input fields:
 //   - clientId: Target organization id — platform admins only; omit otherwise
 //   - datasetId (required): Dataset id or folder name
 //   - trainingFile: File name in the folder when there are several
 //   - validationFile
+//   - format: Check against this shape instead of the folder's declared one
 func (a *TrainingAdmin) ValidateTrainingDataset(ctx context.Context, input map[string]any) (*Outcome, error) {
 	return a.c.call(ctx, "validate_training_dataset", input)
 }
