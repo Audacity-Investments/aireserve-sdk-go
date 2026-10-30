@@ -1,4 +1,4 @@
-package audacityruntime_test
+package aireserveruntime_test
 
 // generate_image_test.go — image generation (spec §8): POST
 // /v1/images/generations request serialization, url/b64_json response
@@ -13,9 +13,9 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/Audacity-Investments/audacity-sdk-go"
-	"github.com/Audacity-Investments/audacity-sdk-go/audacityruntime"
-	"github.com/Audacity-Investments/audacity-sdk-go/audacityruntime/types"
+	"github.com/Audacity-Investments/aireserve-sdk-go"
+	"github.com/Audacity-Investments/aireserve-sdk-go/aireserveruntime"
+	"github.com/Audacity-Investments/aireserve-sdk-go/aireserveruntime/types"
 )
 
 func imageURLResponse() map[string]interface{} {
@@ -41,9 +41,9 @@ func TestGenerateImageURLHappyPath(t *testing.T) {
 		jsonResponse(t, w, 200, imageURLResponse())
 	})
 
-	out, err := client.GenerateImage(context.Background(), &audacityruntime.GenerateImageInput{
-		Model:  audacity.String("gpt-image-1"),
-		Prompt: audacity.String("A fluffy cat"),
+	out, err := client.GenerateImage(context.Background(), &aireserveruntime.GenerateImageInput{
+		Model:  aireserve.String("gpt-image-1"),
+		Prompt: aireserve.String("A fluffy cat"),
 	})
 	if err != nil {
 		t.Fatalf("GenerateImage: %v", err)
@@ -90,11 +90,11 @@ func TestGenerateImageB64JsonResponse(t *testing.T) {
 		})
 	})
 
-	out, err := client.GenerateImage(context.Background(), &audacityruntime.GenerateImageInput{
-		Model:          audacity.String("gpt-image-1"),
-		Prompt:         audacity.String("Two words"),
-		N:              audacity.Int32(2),
-		ResponseFormat: audacity.String("b64_json"),
+	out, err := client.GenerateImage(context.Background(), &aireserveruntime.GenerateImageInput{
+		Model:          aireserve.String("gpt-image-1"),
+		Prompt:         aireserve.String("Two words"),
+		N:              aireserve.Int32(2),
+		ResponseFormat: aireserve.String("b64_json"),
 	})
 	if err != nil {
 		t.Fatalf("GenerateImage: %v", err)
@@ -120,14 +120,14 @@ func TestGenerateImageSerializesAllParams(t *testing.T) {
 		jsonResponse(t, w, 200, imageURLResponse())
 	})
 
-	_, err := client.GenerateImage(context.Background(), &audacityruntime.GenerateImageInput{
-		Model:          audacity.String("dall-e-3"),
-		Prompt:         audacity.String("A watercolor fox"),
-		N:              audacity.Int32(3),
-		Size:           audacity.String("1792x1024"),
-		Quality:        audacity.String("hd"),
-		ResponseFormat: audacity.String("b64_json"),
-		User:           audacity.String("user-123"),
+	_, err := client.GenerateImage(context.Background(), &aireserveruntime.GenerateImageInput{
+		Model:          aireserve.String("dall-e-3"),
+		Prompt:         aireserve.String("A watercolor fox"),
+		N:              aireserve.Int32(3),
+		Size:           aireserve.String("1792x1024"),
+		Quality:        aireserve.String("hd"),
+		ResponseFormat: aireserve.String("b64_json"),
+		User:           aireserve.String("user-123"),
 	})
 	if err != nil {
 		t.Fatalf("GenerateImage: %v", err)
@@ -164,8 +164,8 @@ func TestGenerateImage401MapsToAccessDenied(t *testing.T) {
 		})
 	})
 
-	_, err := client.GenerateImage(context.Background(), &audacityruntime.GenerateImageInput{
-		Model: audacity.String("gpt-image-1"), Prompt: audacity.String("x"),
+	_, err := client.GenerateImage(context.Background(), &aireserveruntime.GenerateImageInput{
+		Model: aireserve.String("gpt-image-1"), Prompt: aireserve.String("x"),
 	})
 	var accessDenied *types.AccessDeniedException
 	if !errors.As(err, &accessDenied) {
@@ -188,8 +188,8 @@ func TestGenerateImage402MapsToServiceQuotaExceeded(t *testing.T) {
 		})
 	})
 
-	_, err := client.GenerateImage(context.Background(), &audacityruntime.GenerateImageInput{
-		Model: audacity.String("gpt-image-1"), Prompt: audacity.String("x"),
+	_, err := client.GenerateImage(context.Background(), &aireserveruntime.GenerateImageInput{
+		Model: aireserve.String("gpt-image-1"), Prompt: aireserve.String("x"),
 	})
 	var quota *types.ServiceQuotaExceededException
 	if !errors.As(err, &quota) {
@@ -213,8 +213,8 @@ func TestGenerateImage429ThrottlingWithRetryAfter(t *testing.T) {
 		})
 	})
 
-	_, err := client.GenerateImage(context.Background(), &audacityruntime.GenerateImageInput{
-		Model: audacity.String("gpt-image-1"), Prompt: audacity.String("x"),
+	_, err := client.GenerateImage(context.Background(), &aireserveruntime.GenerateImageInput{
+		Model: aireserve.String("gpt-image-1"), Prompt: aireserve.String("x"),
 	})
 	var throttled *types.ThrottlingException
 	if !errors.As(err, &throttled) {
@@ -241,12 +241,12 @@ func TestGenerateImageRetries429ThenSucceeds(t *testing.T) {
 		jsonResponse(t, w, 200, imageURLResponse())
 	}
 	_, s := newTestClient(t, srv)
-	client := audacityruntime.New(audacityruntime.Options{
+	client := aireserveruntime.New(aireserveruntime.Options{
 		APIKey: "test-key", BaseURL: s.URL, MaxRetries: 2,
 	})
 
-	out, err := client.GenerateImage(context.Background(), &audacityruntime.GenerateImageInput{
-		Model: audacity.String("gpt-image-1"), Prompt: audacity.String("retry me"),
+	out, err := client.GenerateImage(context.Background(), &aireserveruntime.GenerateImageInput{
+		Model: aireserve.String("gpt-image-1"), Prompt: aireserve.String("retry me"),
 	})
 	if err != nil {
 		t.Fatalf("GenerateImage: %v", err)
@@ -260,15 +260,15 @@ func TestGenerateImageRetries429ThenSucceeds(t *testing.T) {
 }
 
 func TestGenerateImageMissingRequiredFields(t *testing.T) {
-	client := audacityruntime.New(audacityruntime.Options{APIKey: "test-key", BaseURL: "http://127.0.0.1:1"})
+	client := aireserveruntime.New(aireserveruntime.Options{APIKey: "test-key", BaseURL: "http://127.0.0.1:1"})
 
-	if _, err := client.GenerateImage(context.Background(), &audacityruntime.GenerateImageInput{
-		Prompt: audacity.String("x"),
+	if _, err := client.GenerateImage(context.Background(), &aireserveruntime.GenerateImageInput{
+		Prompt: aireserve.String("x"),
 	}); err == nil {
 		t.Error("expected an error for a missing Model")
 	}
-	if _, err := client.GenerateImage(context.Background(), &audacityruntime.GenerateImageInput{
-		Model: audacity.String("gpt-image-1"),
+	if _, err := client.GenerateImage(context.Background(), &aireserveruntime.GenerateImageInput{
+		Model: aireserve.String("gpt-image-1"),
 	}); err == nil {
 		t.Error("expected an error for a missing Prompt")
 	}

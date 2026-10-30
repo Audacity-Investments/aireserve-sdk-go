@@ -1,4 +1,4 @@
-package audacityruntime
+package aireserveruntime
 
 // generate_image.go — the image-generation helper (spec §8): a JSON POST to
 // /v1/images/generations with the same auth, error-mapping, and retry policy
@@ -9,7 +9,7 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/Audacity-Investments/audacity-sdk-go/audacityruntime/types"
+	"github.com/Audacity-Investments/aireserve-sdk-go/aireserveruntime/types"
 )
 
 // GenerateImageInput is the input to the GenerateImage operation.

@@ -1,4 +1,4 @@
-package audacityruntime_test
+package aireserveruntime_test
 
 // stream_test.go — conformance checklist items 2, 3 (streaming), 8.
 
@@ -14,9 +14,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Audacity-Investments/audacity-sdk-go"
-	"github.com/Audacity-Investments/audacity-sdk-go/audacityruntime"
-	"github.com/Audacity-Investments/audacity-sdk-go/audacityruntime/types"
+	"github.com/Audacity-Investments/aireserve-sdk-go"
+	"github.com/Audacity-Investments/aireserve-sdk-go/aireserveruntime"
+	"github.com/Audacity-Investments/aireserve-sdk-go/aireserveruntime/types"
 )
 
 // ─────────────────────────────────────────────────────────────
@@ -43,7 +43,7 @@ func writeLine(w http.ResponseWriter, line string) {
 }
 
 // collectStreamEvents drains all events from the stream with a 5-second timeout.
-func collectStreamEvents(t *testing.T, stream *audacityruntime.ConverseStreamEventStream) []types.ConverseStreamOutput {
+func collectStreamEvents(t *testing.T, stream *aireserveruntime.ConverseStreamEventStream) []types.ConverseStreamOutput {
 	t.Helper()
 	var events []types.ConverseStreamOutput
 	timeout := time.After(5 * time.Second)
@@ -82,17 +82,17 @@ func standardSSEResponse(w http.ResponseWriter) {
 }
 
 // newStreamClient creates a zero-retry client pointed at a test server URL.
-func newStreamClient(serverURL string) *audacityruntime.Client {
-	return audacityruntime.New(audacityruntime.Options{
+func newStreamClient(serverURL string) *aireserveruntime.Client {
+	return aireserveruntime.New(aireserveruntime.Options{
 		APIKey:     "test-key",
 		BaseURL:    serverURL,
-		MaxRetries: audacityruntime.NoRetries,
+		MaxRetries: aireserveruntime.NoRetries,
 	})
 }
 
-func streamInput() *audacityruntime.ConverseStreamInput {
-	return &audacityruntime.ConverseStreamInput{
-		ModelId:  audacity.String("gpt-5.4-mini"),
+func streamInput() *aireserveruntime.ConverseStreamInput {
+	return &aireserveruntime.ConverseStreamInput{
+		ModelId:  aireserve.String("gpt-5.4-mini"),
 		Messages: []types.Message{{Role: types.ConversationRoleUser, Content: []types.ContentBlock{&types.ContentBlockMemberText{Value: "hi"}}}},
 	}
 }
@@ -571,7 +571,7 @@ func TestStreamRetryBefore429(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	client := audacityruntime.New(audacityruntime.Options{
+	client := aireserveruntime.New(aireserveruntime.Options{
 		APIKey: "test-key", BaseURL: srv.URL, MaxRetries: 2,
 	})
 	streamOut, err := client.ConverseStream(context.Background(), streamInput())
@@ -607,7 +607,7 @@ func TestStreamRetryBefore429(t *testing.T) {
 func TestMissingAPIKeyStream(t *testing.T) {
 	t.Setenv("AIRESERVE_API_KEY", "")
 	t.Setenv("AUDACITY_API_KEY", "")
-	client := audacityruntime.New(audacityruntime.Options{
+	client := aireserveruntime.New(aireserveruntime.Options{
 		APIKey:  "",
 		BaseURL: "http://127.0.0.1:0",
 	})

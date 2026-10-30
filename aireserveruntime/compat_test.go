@@ -1,4 +1,4 @@
-package audacityruntime_test
+package aireserveruntime_test
 
 // compat_test.go — conformance checklist items 18 and 19 (spec §9): the
 // OpenAI-format and Anthropic-format pass-through surfaces.  Hermetic —
@@ -16,9 +16,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Audacity-Investments/audacity-sdk-go"
-	"github.com/Audacity-Investments/audacity-sdk-go/audacityruntime"
-	"github.com/Audacity-Investments/audacity-sdk-go/audacityruntime/types"
+	"github.com/Audacity-Investments/aireserve-sdk-go"
+	"github.com/Audacity-Investments/aireserve-sdk-go/aireserveruntime"
+	"github.com/Audacity-Investments/aireserve-sdk-go/aireserveruntime/types"
 )
 
 // ─────────────────────────────────────────────────────────────
@@ -69,16 +69,16 @@ func captureServer(t *testing.T, responses ...cannedResponse) (*httptest.Server,
 }
 
 // newCompatClient creates a zero-retry client pointed at a test server URL.
-func newCompatClient(serverURL string) *audacityruntime.Client {
-	return audacityruntime.New(audacityruntime.Options{
+func newCompatClient(serverURL string) *aireserveruntime.Client {
+	return aireserveruntime.New(aireserveruntime.Options{
 		APIKey:     "test-key",
 		BaseURL:    serverURL,
-		MaxRetries: audacityruntime.NoRetries,
+		MaxRetries: aireserveruntime.NoRetries,
 	})
 }
 
 // collectRawEvents drains all events from a RawEventStream with a timeout.
-func collectRawEvents(t *testing.T, stream *audacityruntime.RawEventStream) []map[string]interface{} {
+func collectRawEvents(t *testing.T, stream *aireserveruntime.RawEventStream) []map[string]interface{} {
 	t.Helper()
 	var events []map[string]interface{}
 	timeout := time.After(5 * time.Second)
@@ -120,15 +120,15 @@ const anthropicResponseBody = `{
 	"future_field": {"nested": true}
 }`
 
-func chatParams() *audacityruntime.ChatCompletionCreateParams {
-	return &audacityruntime.ChatCompletionCreateParams{
+func chatParams() *aireserveruntime.ChatCompletionCreateParams {
+	return &aireserveruntime.ChatCompletionCreateParams{
 		Model:    "gpt-5.4-mini",
 		Messages: []map[string]interface{}{{"role": "user", "content": "Hi"}},
 	}
 }
 
-func messageParams() *audacityruntime.MessageCreateParams {
-	return &audacityruntime.MessageCreateParams{
+func messageParams() *aireserveruntime.MessageCreateParams {
+	return &aireserveruntime.MessageCreateParams{
 		Model:     "claude-sonnet-4-6",
 		MaxTokens: 64,
 		Messages:  []map[string]interface{}{{"role": "user", "content": "Hi"}},
@@ -144,8 +144,8 @@ func TestChatCompletionsCreatePassthrough(t *testing.T) {
 	defer srv.Close()
 
 	params := chatParams()
-	params.MaxTokens = audacity.Int32(64)
-	params.Temperature = audacity.Float64(0.5)
+	params.MaxTokens = aireserve.Int32(64)
+	params.Temperature = aireserve.Float64(0.5)
 	params.Extra = map[string]interface{}{
 		"seed":            7,
 		"unknown_feature": map[string]interface{}{"enabled": true},
@@ -196,12 +196,12 @@ func TestChatCompletionsCreatePassthrough(t *testing.T) {
 func TestChatCompletionsCreateValidation(t *testing.T) {
 	client := newCompatClient("http://unused.invalid")
 
-	if _, err := client.Chat.Completions.Create(context.Background(), &audacityruntime.ChatCompletionCreateParams{
+	if _, err := client.Chat.Completions.Create(context.Background(), &aireserveruntime.ChatCompletionCreateParams{
 		Messages: []map[string]interface{}{{"role": "user", "content": "Hi"}},
 	}); err == nil {
 		t.Error("expected error for missing model")
 	}
-	if _, err := client.Chat.Completions.Create(context.Background(), &audacityruntime.ChatCompletionCreateParams{
+	if _, err := client.Chat.Completions.Create(context.Background(), &aireserveruntime.ChatCompletionCreateParams{
 		Model: "gpt-5.4-mini",
 	}); err == nil {
 		t.Error("expected error for missing messages")
@@ -209,7 +209,7 @@ func TestChatCompletionsCreateValidation(t *testing.T) {
 
 	t.Setenv("AIRESERVE_API_KEY", "")
 	t.Setenv("AUDACITY_API_KEY", "")
-	missing := audacityruntime.New(audacityruntime.Options{BaseURL: "http://unused.invalid"})
+	missing := aireserveruntime.New(aireserveruntime.Options{BaseURL: "http://unused.invalid"})
 	var missingKey *types.MissingAPIKeyError
 	if _, err := missing.Chat.Completions.Create(context.Background(), chatParams()); !errors.As(err, &missingKey) {
 		t.Errorf("missing API key error = %v, want *types.MissingAPIKeyError", err)
@@ -347,7 +347,7 @@ func TestChatCompletionsRetries429ThenSucceeds(t *testing.T) {
 	)
 	defer srv.Close()
 
-	client := audacityruntime.New(audacityruntime.Options{
+	client := aireserveruntime.New(aireserveruntime.Options{
 		APIKey: "test-key", BaseURL: srv.URL, MaxRetries: 1,
 	})
 	resp, err := client.Chat.Completions.Create(context.Background(), chatParams())
@@ -369,7 +369,7 @@ func TestChatCompletions401NotRetried(t *testing.T) {
 	})
 	defer srv.Close()
 
-	client := audacityruntime.New(audacityruntime.Options{
+	client := aireserveruntime.New(aireserveruntime.Options{
 		APIKey: "test-key", BaseURL: srv.URL, MaxRetries: 2,
 	})
 	_, err := client.Chat.Completions.Create(context.Background(), chatParams())
@@ -621,7 +621,7 @@ func TestMessagesCountTokens(t *testing.T) {
 	srv, requests := captureServer(t, cannedResponse{body: `{"input_tokens": 42}`})
 	defer srv.Close()
 
-	resp, err := newCompatClient(srv.URL).Messages.CountTokens(context.Background(), &audacityruntime.CountTokensParams{
+	resp, err := newCompatClient(srv.URL).Messages.CountTokens(context.Background(), &aireserveruntime.CountTokensParams{
 		Model:    "claude-sonnet-4-6",
 		Messages: []map[string]interface{}{{"role": "user", "content": "Hi"}},
 		Extra:    map[string]interface{}{"unknown_field": true},

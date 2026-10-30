@@ -1,9 +1,9 @@
-package audacityruntime
+package aireserveruntime
 
 import (
 	"context"
 
-	"github.com/Audacity-Investments/audacity-sdk-go/audacityruntime/types"
+	"github.com/Audacity-Investments/aireserve-sdk-go/aireserveruntime/types"
 )
 
 // ConverseInput is the input to the Converse operation.
@@ -56,7 +56,7 @@ type ConverseOutput struct {
 	Metrics *types.ConverseMetrics
 }
 
-// Converse sends a non-streaming request to the Audacity API and returns the
+// Converse sends a non-streaming request to the AI Reserve API and returns the
 // assistant's complete response.
 //
 // Returns types.MissingAPIKeyError if no API key has been configured.

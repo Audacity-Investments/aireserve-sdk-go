@@ -1,4 +1,4 @@
-package audacityruntime_test
+package aireserveruntime_test
 
 // cache_test.go — conformance checklist item 12: cachePoint content blocks
 // and prompt-cache usage counters.
@@ -11,9 +11,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Audacity-Investments/audacity-sdk-go"
-	"github.com/Audacity-Investments/audacity-sdk-go/audacityruntime"
-	"github.com/Audacity-Investments/audacity-sdk-go/audacityruntime/types"
+	"github.com/Audacity-Investments/aireserve-sdk-go"
+	"github.com/Audacity-Investments/aireserve-sdk-go/aireserveruntime"
+	"github.com/Audacity-Investments/aireserve-sdk-go/aireserveruntime/types"
 )
 
 var cachePoint = &types.ContentBlockMemberCachePoint{
@@ -22,7 +22,7 @@ var cachePoint = &types.ContentBlockMemberCachePoint{
 
 // captureConverse sends one Converse call against a capturing server and
 // returns the raw request body and the parsed response.
-func captureConverse(t *testing.T, input *audacityruntime.ConverseInput, usage map[string]interface{}) (map[string]interface{}, *audacityruntime.ConverseOutput) {
+func captureConverse(t *testing.T, input *aireserveruntime.ConverseInput, usage map[string]interface{}) (map[string]interface{}, *aireserveruntime.ConverseOutput) {
 	t.Helper()
 
 	if usage == nil {
@@ -99,9 +99,9 @@ func assertEphemeralMarker(t *testing.T, part interface{}) {
 	}
 }
 
-func userTextInput(blocks ...types.ContentBlock) *audacityruntime.ConverseInput {
-	return &audacityruntime.ConverseInput{
-		ModelId: audacity.String("claude-sonnet"),
+func userTextInput(blocks ...types.ContentBlock) *aireserveruntime.ConverseInput {
+	return &aireserveruntime.ConverseInput{
+		ModelId: aireserve.String("claude-sonnet"),
 		Messages: []types.Message{{
 			Role:    types.ConversationRoleUser,
 			Content: blocks,
@@ -237,8 +237,8 @@ func TestCachePointAfterToolResultIgnored(t *testing.T) {
 }
 
 func TestCachePointInAssistantTurn(t *testing.T) {
-	input := &audacityruntime.ConverseInput{
-		ModelId: audacity.String("claude-sonnet"),
+	input := &aireserveruntime.ConverseInput{
+		ModelId: aireserve.String("claude-sonnet"),
 		Messages: []types.Message{
 			{
 				Role:    types.ConversationRoleUser,
@@ -312,8 +312,8 @@ func TestStreamMetadataCacheCounters(t *testing.T) {
 	}
 
 	client, _ := newTestClient(t, handler)
-	resp, err := client.ConverseStream(context.Background(), &audacityruntime.ConverseStreamInput{
-		ModelId: audacity.String("claude-sonnet"),
+	resp, err := client.ConverseStream(context.Background(), &aireserveruntime.ConverseStreamInput{
+		ModelId: aireserve.String("claude-sonnet"),
 		Messages: []types.Message{{
 			Role:    types.ConversationRoleUser,
 			Content: []types.ContentBlock{&types.ContentBlockMemberText{Value: "Hi"}},

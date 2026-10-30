@@ -1,4 +1,4 @@
-package audacityruntime
+package aireserveruntime
 
 // http.go — low-level HTTP execution helpers used by Converse, ConverseStream,
 // and the §9 pass-through surfaces.
@@ -15,7 +15,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Audacity-Investments/audacity-sdk-go/audacityruntime/types"
+	"github.com/Audacity-Investments/aireserve-sdk-go/aireserveruntime/types"
 )
 
 // doRequest executes a single HTTP POST to a gateway path and returns the raw

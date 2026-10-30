@@ -1,4 +1,4 @@
-package audacityruntime
+package aireserveruntime
 
 // retry.go — retry policy per spec §4.
 
@@ -8,7 +8,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/Audacity-Investments/audacity-sdk-go/audacityruntime/types"
+	"github.com/Audacity-Investments/aireserve-sdk-go/aireserveruntime/types"
 )
 
 // isRetryableError returns true if the error should trigger a retry attempt.

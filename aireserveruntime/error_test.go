@@ -1,4 +1,4 @@
-package audacityruntime_test
+package aireserveruntime_test
 
 // error_test.go — conformance checklist items 5 and 6 (error shapes, retry policy).
 
@@ -11,9 +11,9 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/Audacity-Investments/audacity-sdk-go"
-	"github.com/Audacity-Investments/audacity-sdk-go/audacityruntime"
-	"github.com/Audacity-Investments/audacity-sdk-go/audacityruntime/types"
+	"github.com/Audacity-Investments/aireserve-sdk-go"
+	"github.com/Audacity-Investments/aireserve-sdk-go/aireserveruntime"
+	"github.com/Audacity-Investments/aireserve-sdk-go/aireserveruntime/types"
 )
 
 // ─────────────────────────────────────────────────────────────
@@ -28,11 +28,11 @@ func TestErrorShapeA_AccessDenied(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	client := audacityruntime.New(audacityruntime.Options{
-		APIKey: "bad-key", BaseURL: srv.URL, MaxRetries: audacityruntime.NoRetries,
+	client := aireserveruntime.New(aireserveruntime.Options{
+		APIKey: "bad-key", BaseURL: srv.URL, MaxRetries: aireserveruntime.NoRetries,
 	})
-	_, err := client.Converse(context.Background(), &audacityruntime.ConverseInput{
-		ModelId:  audacity.String("gpt-5.4-mini"),
+	_, err := client.Converse(context.Background(), &aireserveruntime.ConverseInput{
+		ModelId:  aireserve.String("gpt-5.4-mini"),
 		Messages: []types.Message{{Role: types.ConversationRoleUser, Content: []types.ContentBlock{&types.ContentBlockMemberText{Value: "hi"}}}},
 	})
 	if err == nil {
@@ -58,11 +58,11 @@ func TestErrorShapeA_Throttling(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	client := audacityruntime.New(audacityruntime.Options{
-		APIKey: "test-key", BaseURL: srv.URL, MaxRetries: audacityruntime.NoRetries,
+	client := aireserveruntime.New(aireserveruntime.Options{
+		APIKey: "test-key", BaseURL: srv.URL, MaxRetries: aireserveruntime.NoRetries,
 	})
-	_, err := client.Converse(context.Background(), &audacityruntime.ConverseInput{
-		ModelId:  audacity.String("gpt-5.4-mini"),
+	_, err := client.Converse(context.Background(), &aireserveruntime.ConverseInput{
+		ModelId:  aireserve.String("gpt-5.4-mini"),
 		Messages: []types.Message{{Role: types.ConversationRoleUser, Content: []types.ContentBlock{&types.ContentBlockMemberText{Value: "hi"}}}},
 	})
 	var throttle *types.ThrottlingException
@@ -83,11 +83,11 @@ func TestErrorShapeB_ModelNotAllowed(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	client := audacityruntime.New(audacityruntime.Options{
-		APIKey: "test-key", BaseURL: srv.URL, MaxRetries: audacityruntime.NoRetries,
+	client := aireserveruntime.New(aireserveruntime.Options{
+		APIKey: "test-key", BaseURL: srv.URL, MaxRetries: aireserveruntime.NoRetries,
 	})
-	_, err := client.Converse(context.Background(), &audacityruntime.ConverseInput{
-		ModelId:  audacity.String("gpt-5.4-mini"),
+	_, err := client.Converse(context.Background(), &aireserveruntime.ConverseInput{
+		ModelId:  aireserve.String("gpt-5.4-mini"),
 		Messages: []types.Message{{Role: types.ConversationRoleUser, Content: []types.ContentBlock{&types.ContentBlockMemberText{Value: "hi"}}}},
 	})
 	var accessDenied *types.AccessDeniedException
@@ -110,11 +110,11 @@ func TestErrorShapeB_BudgetExceeded(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	client := audacityruntime.New(audacityruntime.Options{
-		APIKey: "test-key", BaseURL: srv.URL, MaxRetries: audacityruntime.NoRetries,
+	client := aireserveruntime.New(aireserveruntime.Options{
+		APIKey: "test-key", BaseURL: srv.URL, MaxRetries: aireserveruntime.NoRetries,
 	})
-	_, err := client.Converse(context.Background(), &audacityruntime.ConverseInput{
-		ModelId:  audacity.String("gpt-5.4-mini"),
+	_, err := client.Converse(context.Background(), &aireserveruntime.ConverseInput{
+		ModelId:  aireserve.String("gpt-5.4-mini"),
 		Messages: []types.Message{{Role: types.ConversationRoleUser, Content: []types.ContentBlock{&types.ContentBlockMemberText{Value: "hi"}}}},
 	})
 	var quota *types.ServiceQuotaExceededException
@@ -158,11 +158,11 @@ func TestRetryAfterThenSuccess(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	client := audacityruntime.New(audacityruntime.Options{
+	client := aireserveruntime.New(aireserveruntime.Options{
 		APIKey: "test-key", BaseURL: srv.URL, MaxRetries: 2,
 	})
-	resp, err := client.Converse(context.Background(), &audacityruntime.ConverseInput{
-		ModelId:  audacity.String("gpt-5.4-mini"),
+	resp, err := client.Converse(context.Background(), &aireserveruntime.ConverseInput{
+		ModelId:  aireserve.String("gpt-5.4-mini"),
 		Messages: []types.Message{{Role: types.ConversationRoleUser, Content: []types.ContentBlock{&types.ContentBlockMemberText{Value: "hi"}}}},
 	})
 	if err != nil {
@@ -191,11 +191,11 @@ func TestNoRetryOn401(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	client := audacityruntime.New(audacityruntime.Options{
+	client := aireserveruntime.New(aireserveruntime.Options{
 		APIKey: "bad-key", BaseURL: srv.URL, MaxRetries: 3,
 	})
-	_, err := client.Converse(context.Background(), &audacityruntime.ConverseInput{
-		ModelId:  audacity.String("gpt-5.4-mini"),
+	_, err := client.Converse(context.Background(), &aireserveruntime.ConverseInput{
+		ModelId:  aireserve.String("gpt-5.4-mini"),
 		Messages: []types.Message{{Role: types.ConversationRoleUser, Content: []types.ContentBlock{&types.ContentBlockMemberText{Value: "hi"}}}},
 	})
 	if err == nil {
@@ -221,11 +221,11 @@ func TestNoBudgetExceededRetry(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	client := audacityruntime.New(audacityruntime.Options{
+	client := aireserveruntime.New(aireserveruntime.Options{
 		APIKey: "test-key", BaseURL: srv.URL, MaxRetries: 3,
 	})
-	_, err := client.Converse(context.Background(), &audacityruntime.ConverseInput{
-		ModelId:  audacity.String("gpt-5.4-mini"),
+	_, err := client.Converse(context.Background(), &aireserveruntime.ConverseInput{
+		ModelId:  aireserve.String("gpt-5.4-mini"),
 		Messages: []types.Message{{Role: types.ConversationRoleUser, Content: []types.ContentBlock{&types.ContentBlockMemberText{Value: "hi"}}}},
 	})
 	if err == nil {
@@ -290,11 +290,11 @@ func TestHTTPStatusFallbackMapping(t *testing.T) {
 			}))
 			defer srv.Close()
 
-			client := audacityruntime.New(audacityruntime.Options{
-				APIKey: "test-key", BaseURL: srv.URL, MaxRetries: audacityruntime.NoRetries,
+			client := aireserveruntime.New(aireserveruntime.Options{
+				APIKey: "test-key", BaseURL: srv.URL, MaxRetries: aireserveruntime.NoRetries,
 			})
-			_, err := client.Converse(context.Background(), &audacityruntime.ConverseInput{
-				ModelId:  audacity.String("gpt-5.4-mini"),
+			_, err := client.Converse(context.Background(), &aireserveruntime.ConverseInput{
+				ModelId:  aireserve.String("gpt-5.4-mini"),
 				Messages: []types.Message{{Role: types.ConversationRoleUser, Content: []types.ContentBlock{&types.ContentBlockMemberText{Value: "hi"}}}},
 			})
 			if err == nil {

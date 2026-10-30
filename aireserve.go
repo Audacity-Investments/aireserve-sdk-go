@@ -1,6 +1,6 @@
-// Package audacity provides pointer helper functions for the Audacity SDK,
+// Package aireserve provides pointer helper functions for the AI Reserve SDK,
 // mirroring the aws-sdk-go-v2 root package conventions.
-package audacity
+package aireserve
 
 // String returns a pointer to the given string value.
 func String(v string) *string { return &v }

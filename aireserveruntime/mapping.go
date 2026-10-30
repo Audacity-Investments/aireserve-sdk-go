@@ -1,4 +1,4 @@
-package audacityruntime
+package aireserveruntime
 
 // mapping.go — normative §3 request/response translation between the
 // Bedrock-shaped public API and the OpenAI wire format.
@@ -8,7 +8,7 @@ import (
 	"encoding/json"
 	"strings"
 
-	"github.com/Audacity-Investments/audacity-sdk-go/audacityruntime/types"
+	"github.com/Audacity-Investments/aireserve-sdk-go/aireserveruntime/types"
 )
 
 // ─────────────────────────────────────────────────────────────

@@ -1,7 +1,7 @@
-package audacityruntime
+package aireserveruntime
 
 // export_test.go — test-only hooks for the resumable-upload internals,
-// reachable from the external audacityruntime_test package.
+// reachable from the external aireserveruntime_test package.
 
 import "context"
 

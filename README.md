@@ -1,10 +1,10 @@
-# audacity-sdk-go
+# aireserve-sdk-go
 
-Go client for the [Audacity Investments](https://portal.audacityinvestments.com) API with an
-**Amazon Bedrock Converse–shaped surface** — swap `bedrockruntime` for `audacityruntime`, change
+Go client for the [AI Reserve](https://portal.aireserve.com) API with an
+**Amazon Bedrock Converse–shaped surface** — swap `bedrockruntime` for `aireserveruntime`, change
 the constructor, and keep the rest of your code.
 
-- Module: `github.com/Audacity-Investments/audacity-sdk-go`
+- Module: `github.com/Audacity-Investments/aireserve-sdk-go`
 - Go 1.22+, **stdlib only** (`net/http`, `encoding/json`, `bufio`)
 - Version: `0.5.1`
 
@@ -13,7 +13,7 @@ the constructor, and keep the rest of your code.
 ## Installation
 
 ```sh
-go get github.com/Audacity-Investments/audacity-sdk-go
+go get github.com/Audacity-Investments/aireserve-sdk-go
 ```
 
 ---
@@ -25,7 +25,7 @@ go get github.com/Audacity-Investments/audacity-sdk-go
 | 1 | Explicit `Options` field |
 | 2 | `AIRESERVE_API_KEY` / `AIRESERVE_BASE_URL` environment variables |
 | 3 | Legacy `AUDACITY_API_KEY` / `AUDACITY_BASE_URL` environment variables |
-| 4 | Defaults: `baseURL=https://api.audacityinvestments.com`, `timeout=120s`, `maxRetries=2` |
+| 4 | Defaults: `baseURL=https://api.aireserve.com`, `timeout=120s`, `maxRetries=2` |
 
 A missing API key causes `Converse`/`ConverseStream` to return `*types.MissingAPIKeyError`
 immediately, before any network call.
@@ -52,17 +52,17 @@ import (
     "fmt"
     "log"
 
-    "github.com/Audacity-Investments/audacity-sdk-go"
-    "github.com/Audacity-Investments/audacity-sdk-go/audacityruntime"
-    "github.com/Audacity-Investments/audacity-sdk-go/audacityruntime/types"
+    "github.com/Audacity-Investments/aireserve-sdk-go"
+    "github.com/Audacity-Investments/aireserve-sdk-go/aireserveruntime"
+    "github.com/Audacity-Investments/aireserve-sdk-go/aireserveruntime/types"
 )
 
 func main() {
     // Reads AIRESERVE_API_KEY (or legacy AUDACITY_API_KEY) from the environment.
-    client := audacityruntime.New(audacityruntime.Options{})
+    client := aireserveruntime.New(aireserveruntime.Options{})
 
-    resp, err := client.Converse(context.Background(), &audacityruntime.ConverseInput{
-        ModelId: audacity.String("gpt-5.4-mini"),
+    resp, err := client.Converse(context.Background(), &aireserveruntime.ConverseInput{
+        ModelId: aireserve.String("gpt-5.4-mini"),
         Messages: []types.Message{{
             Role:    types.ConversationRoleUser,
             Content: []types.ContentBlock{
@@ -70,8 +70,8 @@ func main() {
             },
         }},
         InferenceConfig: &types.InferenceConfiguration{
-            MaxTokens:   audacity.Int32(500),
-            Temperature: audacity.Float32(0.2),
+            MaxTokens:   aireserve.Int32(500),
+            Temperature: aireserve.Float32(0.2),
         },
     })
     if err != nil {
@@ -96,8 +96,8 @@ func main() {
 ## Streaming example
 
 ```go
-streamResp, err := client.ConverseStream(ctx, &audacityruntime.ConverseStreamInput{
-    ModelId: audacity.String("gpt-5.4-mini"),
+streamResp, err := client.ConverseStream(ctx, &aireserveruntime.ConverseStreamInput{
+    ModelId: aireserve.String("gpt-5.4-mini"),
     Messages: []types.Message{{
         Role:    types.ConversationRoleUser,
         Content: []types.ContentBlock{&types.ContentBlockMemberText{Value: "Tell me a story"}},
@@ -154,11 +154,11 @@ works, with no SDK release needed.
 ### OpenAI format
 
 ```go
-resp, err := client.Chat.Completions.Create(ctx, &audacityruntime.ChatCompletionCreateParams{
+resp, err := client.Chat.Completions.Create(ctx, &aireserveruntime.ChatCompletionCreateParams{
     Model:       "gpt-5.4-mini",
     Messages:    []map[string]interface{}{{"role": "user", "content": "Hello!"}},
-    MaxTokens:   audacity.Int32(500),
-    Temperature: audacity.Float64(0.2),
+    MaxTokens:   aireserve.Int32(500),
+    Temperature: aireserve.Float64(0.2),
     Extra:       map[string]interface{}{"seed": 7}, // any other OpenAI field
 })
 if err != nil {
@@ -173,7 +173,7 @@ Streaming yields raw chat-completion chunks; the stream ends at the gateway's
 via `stream.Err()`):
 
 ```go
-stream, err := client.Chat.Completions.CreateStream(ctx, &audacityruntime.ChatCompletionCreateParams{
+stream, err := client.Chat.Completions.CreateStream(ctx, &aireserveruntime.ChatCompletionCreateParams{
     Model:    "gpt-5.4-mini",
     Messages: []map[string]interface{}{{"role": "user", "content": "Tell me a story"}},
 })
@@ -202,7 +202,7 @@ to Claude models. Requests carry the `anthropic-version: 2023-06-01` header
 automatically:
 
 ```go
-resp, err := client.Messages.Create(ctx, &audacityruntime.MessageCreateParams{
+resp, err := client.Messages.Create(ctx, &aireserveruntime.MessageCreateParams{
     Model:     "claude-sonnet-4-6",
     MaxTokens: 500,
     Messages:  []map[string]interface{}{{"role": "user", "content": "Hello!"}},
@@ -221,7 +221,7 @@ EOF, and EOF before `message_stop` (or an `error` event) surfaces via
 `stream.Err()`:
 
 ```go
-stream, err := client.Messages.CreateStream(ctx, &audacityruntime.MessageCreateParams{
+stream, err := client.Messages.CreateStream(ctx, &aireserveruntime.MessageCreateParams{
     Model:     "claude-sonnet-4-6",
     MaxTokens: 500,
     Messages:  []map[string]interface{}{{"role": "user", "content": "Tell me a story"}},
@@ -247,7 +247,7 @@ if err := stream.Err(); err != nil {
 Token counting is free — no inference happens:
 
 ```go
-count, err := client.Messages.CountTokens(ctx, &audacityruntime.CountTokensParams{
+count, err := client.Messages.CountTokens(ctx, &aireserveruntime.CountTokensParams{
     Model:    "claude-sonnet-4-6",
     Messages: []map[string]interface{}{{"role": "user", "content": "How many tokens is this?"}},
 })
@@ -270,16 +270,16 @@ including the gateway's Anthropic-shaped error envelopes.
  import (
 -    "github.com/aws/aws-sdk-go-v2/service/bedrockruntime"
 -    "github.com/aws/aws-sdk-go-v2/service/bedrockruntime/types"
-+    "github.com/Audacity-Investments/audacity-sdk-go/audacityruntime"
-+    "github.com/Audacity-Investments/audacity-sdk-go/audacityruntime/types"
++    "github.com/Audacity-Investments/aireserve-sdk-go/aireserveruntime"
++    "github.com/Audacity-Investments/aireserve-sdk-go/aireserveruntime/types"
  )
 
 -client := bedrockruntime.NewFromConfig(cfg)
-+client := audacityruntime.New(audacityruntime.Options{})  // reads AIRESERVE_API_KEY
++client := aireserveruntime.New(aireserveruntime.Options{})  // reads AIRESERVE_API_KEY
 
- resp, err := client.Converse(ctx, &audacityruntime.ConverseInput{
+ resp, err := client.Converse(ctx, &aireserveruntime.ConverseInput{
 -    ModelId: aws.String("anthropic.claude-3-5-sonnet-20241022-v2:0"),
-+    ModelId: audacity.String("gpt-5.4-mini"),
++    ModelId: aireserve.String("gpt-5.4-mini"),
      Messages: []types.Message{{ … }},
  })
 ```
@@ -296,7 +296,7 @@ All server-derived errors embed `types.APIError` and are reachable via `errors.A
 ```go
 import (
     "errors"
-    "github.com/Audacity-Investments/audacity-sdk-go/audacityruntime/types"
+    "github.com/Audacity-Investments/aireserve-sdk-go/aireserveruntime/types"
 )
 
 _, err := client.Converse(ctx, input)
@@ -349,8 +349,8 @@ all 4xx non-408/429 errors are never retried.
 ## Tool use
 
 ```go
-resp, err := client.Converse(ctx, &audacityruntime.ConverseInput{
-    ModelId: audacity.String("gpt-5.4-mini"),
+resp, err := client.Converse(ctx, &aireserveruntime.ConverseInput{
+    ModelId: aireserve.String("gpt-5.4-mini"),
     Messages: []types.Message{{
         Role:    types.ConversationRoleUser,
         Content: []types.ContentBlock{&types.ContentBlockMemberText{Value: "Weather in London?"}},
@@ -359,7 +359,7 @@ resp, err := client.Converse(ctx, &audacityruntime.ConverseInput{
         Tools: []types.Tool{{
             ToolSpec: &types.ToolSpecification{
                 Name:        "get_weather",
-                Description: audacity.String("Returns current weather"),
+                Description: aireserve.String("Returns current weather"),
                 InputSchema: &types.ToolInputSchema{
                     Json: map[string]interface{}{
                         "type": "object",
@@ -383,7 +383,7 @@ resp, err := client.Converse(ctx, &audacityruntime.ConverseInput{
 ## Images (vision models)
 
 Bedrock-style image content blocks are supported in user messages. Pass raw
-bytes (base64-encoded for you) or a URL (Audacity extension):
+bytes (base64-encoded for you) or a URL (AI Reserve extension):
 
 ```go
 imageBytes, err := os.ReadFile("chart.png")
@@ -391,8 +391,8 @@ if err != nil {
     log.Fatal(err)
 }
 
-resp, err := client.Converse(ctx, &audacityruntime.ConverseInput{
-    ModelId: audacity.String("gpt-5.5"),
+resp, err := client.Converse(ctx, &aireserveruntime.ConverseInput{
+    ModelId: aireserve.String("gpt-5.5"),
     Messages: []types.Message{{
         Role: types.ConversationRoleUser,
         Content: []types.ContentBlock{
@@ -425,8 +425,8 @@ if err != nil {
     log.Fatal(err)
 }
 
-resp, err := client.Converse(ctx, &audacityruntime.ConverseInput{
-    ModelId: audacity.String("gemini-2.5-flash"),
+resp, err := client.Converse(ctx, &aireserveruntime.ConverseInput{
+    ModelId: aireserve.String("gemini-2.5-flash"),
     Messages: []types.Message{{
         Role: types.ConversationRoleUser,
         Content: []types.ContentBlock{
@@ -459,8 +459,8 @@ tokenized — `types.MediaResolutionLow` cuts video token cost roughly **4x**
 default applies.
 
 ```go
-resp, err := client.Converse(ctx, &audacityruntime.ConverseInput{
-    ModelId:         audacity.String("gemini-2.5-flash"),
+resp, err := client.Converse(ctx, &aireserveruntime.ConverseInput{
+    ModelId:         aireserve.String("gemini-2.5-flash"),
     MediaResolution: types.MediaResolutionLow, // ~4x cheaper video tokens
     Messages: []types.Message{{
         Role: types.ConversationRoleUser,
@@ -489,7 +489,7 @@ if err != nil {
     log.Fatal(err)
 }
 
-upload, err := client.UploadFile(ctx, &audacityruntime.UploadFileInput{
+upload, err := client.UploadFile(ctx, &aireserveruntime.UploadFileInput{
     Data:        videoBytes,
     ContentType: "video/mp4",
 })
@@ -497,8 +497,8 @@ if err != nil {
     log.Fatal(err)
 }
 
-resp, err := client.Converse(ctx, &audacityruntime.ConverseInput{
-    ModelId: audacity.String("gemini-2.5-flash"),
+resp, err := client.Converse(ctx, &aireserveruntime.ConverseInput{
+    ModelId: aireserve.String("gemini-2.5-flash"),
     Messages: []types.Message{{
         Role: types.ConversationRoleUser,
         Content: []types.ContentBlock{
@@ -540,11 +540,11 @@ Generate images from a text prompt with `GenerateImage`. With
 `ResponseFormat` `"b64_json"` the image bytes come back inline:
 
 ```go
-out, err := client.GenerateImage(ctx, &audacityruntime.GenerateImageInput{
-    Model:          audacity.String("gpt-image-1"),
-    Prompt:         audacity.String("A watercolor painting of a fox in a snowy forest"),
-    Size:           audacity.String("1024x1024"),
-    ResponseFormat: audacity.String("b64_json"),
+out, err := client.GenerateImage(ctx, &aireserveruntime.GenerateImageInput{
+    Model:          aireserve.String("gpt-image-1"),
+    Prompt:         aireserve.String("A watercolor painting of a fox in a snowy forest"),
+    Size:           aireserve.String("1024x1024"),
+    ResponseFormat: aireserve.String("b64_json"),
 })
 if err != nil {
     log.Fatal(err)
@@ -561,9 +561,9 @@ With `ResponseFormat` `"url"` (the default) the gateway stores the image and
 returns a signed download URL that expires after ~24 hours:
 
 ```go
-out, err := client.GenerateImage(ctx, &audacityruntime.GenerateImageInput{
-    Model:  audacity.String("gemini-2.5-flash-image"),
-    Prompt: audacity.String("A watercolor painting of a fox in a snowy forest"),
+out, err := client.GenerateImage(ctx, &aireserveruntime.GenerateImageInput{
+    Model:  aireserve.String("gemini-2.5-flash-image"),
+    Prompt: aireserve.String("A watercolor painting of a fox in a snowy forest"),
 })
 if err != nil {
     log.Fatal(err)
@@ -608,8 +608,8 @@ point is cached provider-side on Claude models; OpenAI/Gemini models cache
 automatically and ignore the marker. At most 4 cache points per request.
 
 ```go
-resp, err := client.Converse(ctx, &audacityruntime.ConverseInput{
-    ModelId: audacity.String("claude-sonnet-4-5"),
+resp, err := client.Converse(ctx, &aireserveruntime.ConverseInput{
+    ModelId: aireserve.String("claude-sonnet-4-5"),
     System: []types.SystemContentBlock{
         {Text: longSystemPrompt},
         {CachePoint: &types.CachePointBlock{Type: types.CachePointTypeDefault}},
@@ -635,42 +635,17 @@ A cache point with nothing before it in the same message is silently ignored.
 
 ---
 
-## Admin API (`audacityadmin`)
-
-Run your organization from code — members, teams, budgets, API keys, settings, routing,
-GPU machines, containers and training — with the same operations the portal and the
-AI Reserve MCP server offer. It authenticates with a **management token**
-(`aireserve_mcp_…`, from `aireserve login`, an MCP client's Authenticate step, or the portal's
-Management Keys), never an inference key, and acts as that token's owner.
-
-```go
-import "github.com/Audacity-Investments/audacity-sdk-go/audacityadmin"
-
-admin, err := audacityadmin.New(audacityadmin.Options{ManagementToken: os.Getenv("AIRESERVE_MCP_TOKEN")})
-if err != nil { log.Fatal(err) }
-
-users, err := admin.Members.ListOrgUsers(ctx, nil)
-key, err := admin.ApiKeys.CreateClientApiKey(ctx, map[string]any{"name": "CI pipeline"})
-fmt.Println(key.Secret) // shown once; key.Sensitive == true
-ops, err := admin.Ops(ctx) // what this token may call, filtered by role
-```
-
-Every operation returns an `*Outcome` (`OK`, `Summary`, `Message`, `Data`, `Secret`,
-`Sensitive`); refusals, `401` and `429` return an `*audacityadmin.Error` with the server's
-`Code`. Input fields are listed in each method's doc comment; the package is generated from the
-gateway's operation registry. See https://docs.aireserve.com/capabilities/admin-api.
-
 ## Options reference
 
 ```go
-client := audacityruntime.New(audacityruntime.Options{
+client := aireserveruntime.New(aireserveruntime.Options{
     APIKey:     "aireserve_api_…",         // falls back to AIRESERVE_API_KEY, then legacy AUDACITY_API_KEY
     BaseURL:    "https://…",              // falls back to AIRESERVE_BASE_URL (legacy AUDACITY_BASE_URL), then default
     HTTPClient: &http.Client{…},          // custom transport / TLS config
     MaxRetries: 3,                        // additional attempts (0 = default 2 → 3 total;
-                                          // audacityruntime.NoRetries disables retries)
+                                          // aireserveruntime.NoRetries disables retries)
     Timeout:    60 * time.Second,         // per-attempt timeout (0 = default 120s;
-                                          // audacityruntime.NoTimeout disables it)
+                                          // aireserveruntime.NoTimeout disables it)
 })
 ```
 
@@ -687,4 +662,4 @@ timeout bounds the entire response body and will kill long streams mid-generatio
 
 ## License
 
-Copyright Audacity Investments. All rights reserved.
+Copyright AI Reserve. All rights reserved.

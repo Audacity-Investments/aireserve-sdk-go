@@ -1,4 +1,4 @@
-package audacityruntime_test
+package aireserveruntime_test
 
 // video_test.go — conformance checklist item 13: video content blocks.
 // Mirrors image_test.go, reusing its captureMessages/partTypes helpers.
@@ -7,7 +7,7 @@ import (
 	"encoding/base64"
 	"testing"
 
-	"github.com/Audacity-Investments/audacity-sdk-go/audacityruntime/types"
+	"github.com/Audacity-Investments/aireserve-sdk-go/aireserveruntime/types"
 )
 
 func videoBlock(format types.VideoFormat, data []byte) types.ContentBlock {

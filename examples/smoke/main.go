@@ -8,9 +8,9 @@ import (
 	"log"
 	"os"
 
-	audacity "github.com/Audacity-Investments/audacity-sdk-go"
-	"github.com/Audacity-Investments/audacity-sdk-go/audacityruntime"
-	"github.com/Audacity-Investments/audacity-sdk-go/audacityruntime/types"
+	aireserve "github.com/Audacity-Investments/aireserve-sdk-go"
+	"github.com/Audacity-Investments/aireserve-sdk-go/aireserveruntime"
+	"github.com/Audacity-Investments/aireserve-sdk-go/aireserveruntime/types"
 )
 
 func userMessage(text string) types.Message {
@@ -22,15 +22,15 @@ func userMessage(text string) types.Message {
 
 func main() {
 	ctx := context.Background()
-	client := audacityruntime.New(audacityruntime.Options{})
+	client := aireserveruntime.New(aireserveruntime.Options{})
 
 	fmt.Println("--- non-streaming ---")
-	resp, err := client.Converse(ctx, &audacityruntime.ConverseInput{
-		ModelId:  audacity.String("gpt-5.4-mini"),
+	resp, err := client.Converse(ctx, &aireserveruntime.ConverseInput{
+		ModelId:  aireserve.String("gpt-5.4-mini"),
 		Messages: []types.Message{userMessage("Reply with exactly: OK")},
 		InferenceConfig: &types.InferenceConfiguration{
-			MaxTokens:   audacity.Int32(20),
-			Temperature: audacity.Float32(0),
+			MaxTokens:   aireserve.Int32(20),
+			Temperature: aireserve.Float32(0),
 		},
 	})
 	if err != nil {
@@ -44,11 +44,11 @@ func main() {
 		resp.Metrics.LatencyMs)
 
 	fmt.Println("--- streaming ---")
-	streamResp, err := client.ConverseStream(ctx, &audacityruntime.ConverseStreamInput{
-		ModelId:  audacity.String("gpt-5.4-mini"),
+	streamResp, err := client.ConverseStream(ctx, &aireserveruntime.ConverseStreamInput{
+		ModelId:  aireserve.String("gpt-5.4-mini"),
 		Messages: []types.Message{userMessage("Count from 1 to 5, digits separated by spaces.")},
 		InferenceConfig: &types.InferenceConfiguration{
-			MaxTokens: audacity.Int32(30),
+			MaxTokens: aireserve.Int32(30),
 		},
 	})
 	if err != nil {
@@ -90,14 +90,14 @@ func main() {
 	fmt.Printf("event kinds in order: %v\n", kinds)
 	fmt.Printf("streamed text: %q\n", streamed)
 
-	// Optional (costs money): set AUDACITY_SMOKE_IMAGE_MODEL (e.g. gpt-image-1)
+	// Optional (costs money): set AIRESERVE_SMOKE_IMAGE_MODEL (e.g. gpt-image-1)
 	// to also smoke the image-generation endpoint. Skipped by default.
-	if imageModel := os.Getenv("AUDACITY_SMOKE_IMAGE_MODEL"); imageModel != "" {
+	if imageModel := os.Getenv("AIRESERVE_SMOKE_IMAGE_MODEL"); imageModel != "" {
 		fmt.Println("--- image generation ---")
-		img, err := client.GenerateImage(ctx, &audacityruntime.GenerateImageInput{
-			Model:  audacity.String(imageModel),
-			Prompt: audacity.String("A single red square on a white background"),
-			Size:   audacity.String("1024x1024"),
+		img, err := client.GenerateImage(ctx, &aireserveruntime.GenerateImageInput{
+			Model:  aireserve.String(imageModel),
+			Prompt: aireserve.String("A single red square on a white background"),
+			Size:   aireserve.String("1024x1024"),
 		})
 		if err != nil {
 			log.Fatal(err)
@@ -116,9 +116,9 @@ func main() {
 	}
 
 	fmt.Println("--- error: bad api key ---")
-	badClient := audacityruntime.New(audacityruntime.Options{APIKey: "audacity_api_bogus"})
-	_, err = badClient.Converse(ctx, &audacityruntime.ConverseInput{
-		ModelId:  audacity.String("gpt-5.4-mini"),
+	badClient := aireserveruntime.New(aireserveruntime.Options{APIKey: "aireserve_api_bogus"})
+	_, err = badClient.Converse(ctx, &aireserveruntime.ConverseInput{
+		ModelId:  aireserve.String("gpt-5.4-mini"),
 		Messages: []types.Message{userMessage("hi")},
 	})
 	var accessDenied *types.AccessDeniedException
@@ -130,8 +130,8 @@ func main() {
 	}
 
 	fmt.Println("--- error: bad model ---")
-	_, err = client.Converse(ctx, &audacityruntime.ConverseInput{
-		ModelId:  audacity.String("not-a-real-model-xyz"),
+	_, err = client.Converse(ctx, &aireserveruntime.ConverseInput{
+		ModelId:  aireserve.String("not-a-real-model-xyz"),
 		Messages: []types.Message{userMessage("hi")},
 	})
 	var validation *types.ValidationException

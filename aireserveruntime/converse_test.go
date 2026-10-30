@@ -1,4 +1,4 @@
-package audacityruntime_test
+package aireserveruntime_test
 
 // converse_test.go — conformance checklist items 1, 3 (non-streaming), 4, 7, 9, 10.
 
@@ -14,23 +14,23 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/Audacity-Investments/audacity-sdk-go"
-	"github.com/Audacity-Investments/audacity-sdk-go/audacityruntime"
-	"github.com/Audacity-Investments/audacity-sdk-go/audacityruntime/types"
+	"github.com/Audacity-Investments/aireserve-sdk-go"
+	"github.com/Audacity-Investments/aireserve-sdk-go/aireserveruntime"
+	"github.com/Audacity-Investments/aireserve-sdk-go/aireserveruntime/types"
 )
 
 // ─────────────────────────────────────────────────────────────
 // helpers
 // ─────────────────────────────────────────────────────────────
 
-func newTestClient(t *testing.T, handler http.HandlerFunc) (*audacityruntime.Client, *httptest.Server) {
+func newTestClient(t *testing.T, handler http.HandlerFunc) (*aireserveruntime.Client, *httptest.Server) {
 	t.Helper()
 	srv := httptest.NewServer(handler)
 	t.Cleanup(srv.Close)
-	client := audacityruntime.New(audacityruntime.Options{
+	client := aireserveruntime.New(aireserveruntime.Options{
 		APIKey:     "test-key",
 		BaseURL:    srv.URL,
-		MaxRetries: audacityruntime.NoRetries,
+		MaxRetries: aireserveruntime.NoRetries,
 	})
 	return client, srv
 }
@@ -54,8 +54,8 @@ func TestConverseHappyPath(t *testing.T) {
 		if r.Header.Get("Authorization") != "Bearer test-key" {
 			t.Errorf("Authorization header = %q, want Bearer test-key", r.Header.Get("Authorization"))
 		}
-		if !strings.Contains(r.Header.Get("User-Agent"), "audacity-sdk-go/") {
-			t.Errorf("User-Agent = %q, want audacity-sdk-go/…", r.Header.Get("User-Agent"))
+		if !strings.Contains(r.Header.Get("User-Agent"), "aireserve-sdk-go/") {
+			t.Errorf("User-Agent = %q, want aireserve-sdk-go/…", r.Header.Get("User-Agent"))
 		}
 		if r.Header.Get("Content-Type") != "application/json" {
 			t.Errorf("Content-Type = %q, want application/json", r.Header.Get("Content-Type"))
@@ -96,13 +96,13 @@ func TestConverseHappyPath(t *testing.T) {
 	}
 
 	client, _ := newTestClient(t, handler)
-	resp, err := client.Converse(context.Background(), &audacityruntime.ConverseInput{
-		ModelId: audacity.String("gpt-5.4-mini"),
+	resp, err := client.Converse(context.Background(), &aireserveruntime.ConverseInput{
+		ModelId: aireserve.String("gpt-5.4-mini"),
 		Messages: []types.Message{{
 			Role:    types.ConversationRoleUser,
 			Content: []types.ContentBlock{&types.ContentBlockMemberText{Value: "Hi"}},
 		}},
-		InferenceConfig: &types.InferenceConfiguration{MaxTokens: audacity.Int32(500)},
+		InferenceConfig: &types.InferenceConfiguration{MaxTokens: aireserve.Int32(500)},
 	})
 	if err != nil {
 		t.Fatalf("Converse returned error: %v", err)
@@ -198,8 +198,8 @@ func TestConverseToolRoundTrip(t *testing.T) {
 	}
 
 	client, _ := newTestClient(t, handler)
-	resp, err := client.Converse(context.Background(), &audacityruntime.ConverseInput{
-		ModelId: audacity.String("gpt-5.4-mini"),
+	resp, err := client.Converse(context.Background(), &aireserveruntime.ConverseInput{
+		ModelId: aireserve.String("gpt-5.4-mini"),
 		Messages: []types.Message{{
 			Role:    types.ConversationRoleUser,
 			Content: []types.ContentBlock{&types.ContentBlockMemberText{Value: "Weather in London?"}},
@@ -208,7 +208,7 @@ func TestConverseToolRoundTrip(t *testing.T) {
 			Tools: []types.Tool{{
 				ToolSpec: &types.ToolSpecification{
 					Name:        "get_weather",
-					Description: audacity.String("Get weather"),
+					Description: aireserve.String("Get weather"),
 					InputSchema: &types.ToolInputSchema{
 						Json: map[string]interface{}{
 							"type":       "object",
@@ -302,8 +302,8 @@ func TestToolResultSerialization(t *testing.T) {
 	}
 
 	client, _ := newTestClient(t, handler)
-	_, err := client.Converse(context.Background(), &audacityruntime.ConverseInput{
-		ModelId: audacity.String("gpt-5.4-mini"),
+	_, err := client.Converse(context.Background(), &aireserveruntime.ConverseInput{
+		ModelId: aireserve.String("gpt-5.4-mini"),
 		Messages: []types.Message{
 			{
 				Role:    types.ConversationRoleUser,
@@ -365,8 +365,8 @@ func TestDefensiveUnwrap(t *testing.T) {
 	}
 
 	client, _ := newTestClient(t, handler)
-	resp, err := client.Converse(context.Background(), &audacityruntime.ConverseInput{
-		ModelId:  audacity.String("gpt-5.4-mini"),
+	resp, err := client.Converse(context.Background(), &aireserveruntime.ConverseInput{
+		ModelId:  aireserve.String("gpt-5.4-mini"),
 		Messages: []types.Message{{Role: types.ConversationRoleUser, Content: []types.ContentBlock{&types.ContentBlockMemberText{Value: "hi"}}}},
 	})
 	if err != nil {
@@ -387,12 +387,12 @@ func TestMissingAPIKey(t *testing.T) {
 	// Ensure neither API-key env var satisfies the key requirement.
 	t.Setenv("AIRESERVE_API_KEY", "")
 	t.Setenv("AUDACITY_API_KEY", "")
-	client := audacityruntime.New(audacityruntime.Options{
+	client := aireserveruntime.New(aireserveruntime.Options{
 		APIKey:  "",
 		BaseURL: "http://127.0.0.1:0",
 	})
-	_, err := client.Converse(context.Background(), &audacityruntime.ConverseInput{
-		ModelId:  audacity.String("gpt-5.4-mini"),
+	_, err := client.Converse(context.Background(), &aireserveruntime.ConverseInput{
+		ModelId:  aireserve.String("gpt-5.4-mini"),
 		Messages: []types.Message{{Role: types.ConversationRoleUser, Content: []types.ContentBlock{&types.ContentBlockMemberText{Value: "hi"}}}},
 	})
 	var missingKey *types.MissingAPIKeyError
@@ -430,10 +430,10 @@ func TestEnvVarPrecedence(t *testing.T) {
 		}
 	}
 
-	converse := func(t *testing.T, client *audacityruntime.Client) {
+	converse := func(t *testing.T, client *aireserveruntime.Client) {
 		t.Helper()
-		if _, err := client.Converse(context.Background(), &audacityruntime.ConverseInput{
-			ModelId:  audacity.String("gpt-5.4-mini"),
+		if _, err := client.Converse(context.Background(), &aireserveruntime.ConverseInput{
+			ModelId:  aireserve.String("gpt-5.4-mini"),
 			Messages: []types.Message{{Role: types.ConversationRoleUser, Content: []types.ContentBlock{&types.ContentBlockMemberText{Value: "hi"}}}},
 		}); err != nil {
 			t.Fatalf("Converse error: %v", err)
@@ -444,7 +444,7 @@ func TestEnvVarPrecedence(t *testing.T) {
 		srv, gotAuth := newAuthCaptureServer(t)
 		t.Setenv("AIRESERVE_API_KEY", "new-key")
 		t.Setenv("AUDACITY_API_KEY", "legacy-key")
-		converse(t, audacityruntime.New(audacityruntime.Options{BaseURL: srv.URL}))
+		converse(t, aireserveruntime.New(aireserveruntime.Options{BaseURL: srv.URL}))
 		if got := gotAuth(); got != "Bearer new-key" {
 			t.Errorf("Authorization = %q, want Bearer new-key", got)
 		}
@@ -454,7 +454,7 @@ func TestEnvVarPrecedence(t *testing.T) {
 		srv, gotAuth := newAuthCaptureServer(t)
 		t.Setenv("AIRESERVE_API_KEY", "")
 		t.Setenv("AUDACITY_API_KEY", "legacy-key")
-		converse(t, audacityruntime.New(audacityruntime.Options{BaseURL: srv.URL}))
+		converse(t, aireserveruntime.New(aireserveruntime.Options{BaseURL: srv.URL}))
 		if got := gotAuth(); got != "Bearer legacy-key" {
 			t.Errorf("Authorization = %q, want Bearer legacy-key", got)
 		}
@@ -464,7 +464,7 @@ func TestEnvVarPrecedence(t *testing.T) {
 		srv, gotAuth := newAuthCaptureServer(t)
 		t.Setenv("AIRESERVE_API_KEY", "new-key")
 		t.Setenv("AUDACITY_API_KEY", "legacy-key")
-		converse(t, audacityruntime.New(audacityruntime.Options{APIKey: "explicit-key", BaseURL: srv.URL}))
+		converse(t, aireserveruntime.New(aireserveruntime.Options{APIKey: "explicit-key", BaseURL: srv.URL}))
 		if got := gotAuth(); got != "Bearer explicit-key" {
 			t.Errorf("Authorization = %q, want Bearer explicit-key", got)
 		}
@@ -474,21 +474,21 @@ func TestEnvVarPrecedence(t *testing.T) {
 		srv, _ := newAuthCaptureServer(t)
 		t.Setenv("AIRESERVE_BASE_URL", srv.URL)
 		t.Setenv("AUDACITY_BASE_URL", "http://127.0.0.1:1") // nothing listens here
-		converse(t, audacityruntime.New(audacityruntime.Options{APIKey: "k", MaxRetries: audacityruntime.NoRetries}))
+		converse(t, aireserveruntime.New(aireserveruntime.Options{APIKey: "k", MaxRetries: aireserveruntime.NoRetries}))
 	})
 
 	t.Run("legacy AUDACITY_BASE_URL still works", func(t *testing.T) {
 		srv, _ := newAuthCaptureServer(t)
 		t.Setenv("AIRESERVE_BASE_URL", "")
 		t.Setenv("AUDACITY_BASE_URL", srv.URL)
-		converse(t, audacityruntime.New(audacityruntime.Options{APIKey: "k", MaxRetries: audacityruntime.NoRetries}))
+		converse(t, aireserveruntime.New(aireserveruntime.Options{APIKey: "k", MaxRetries: aireserveruntime.NoRetries}))
 	})
 
 	t.Run("explicit BaseURL wins over both env vars", func(t *testing.T) {
 		srv, _ := newAuthCaptureServer(t)
 		t.Setenv("AIRESERVE_BASE_URL", "http://127.0.0.1:1")
 		t.Setenv("AUDACITY_BASE_URL", "http://127.0.0.1:1")
-		converse(t, audacityruntime.New(audacityruntime.Options{APIKey: "k", BaseURL: srv.URL, MaxRetries: audacityruntime.NoRetries}))
+		converse(t, aireserveruntime.New(aireserveruntime.Options{APIKey: "k", BaseURL: srv.URL, MaxRetries: aireserveruntime.NoRetries}))
 	})
 }
 
@@ -513,14 +513,14 @@ func TestUserAgent(t *testing.T) {
 		})
 	}
 	client, _ := newTestClient(t, handler)
-	client.Converse(context.Background(), &audacityruntime.ConverseInput{ //nolint:errcheck
-		ModelId:  audacity.String("gpt-5.4-mini"),
+	client.Converse(context.Background(), &aireserveruntime.ConverseInput{ //nolint:errcheck
+		ModelId:  aireserve.String("gpt-5.4-mini"),
 		Messages: []types.Message{{Role: types.ConversationRoleUser, Content: []types.ContentBlock{&types.ContentBlockMemberText{Value: "hi"}}}},
 	})
 	mu.Lock()
 	defer mu.Unlock()
-	if !strings.HasPrefix(gotUA, "audacity-sdk-go/") {
-		t.Errorf("User-Agent = %q, want prefix audacity-sdk-go/", gotUA)
+	if !strings.HasPrefix(gotUA, "aireserve-sdk-go/") {
+		t.Errorf("User-Agent = %q, want prefix aireserve-sdk-go/", gotUA)
 	}
 }
 
@@ -551,8 +551,8 @@ func TestSystemMessages(t *testing.T) {
 		})
 	}
 	client, _ := newTestClient(t, handler)
-	client.Converse(context.Background(), &audacityruntime.ConverseInput{ //nolint:errcheck
-		ModelId: audacity.String("gpt-5.4-mini"),
+	client.Converse(context.Background(), &aireserveruntime.ConverseInput{ //nolint:errcheck
+		ModelId: aireserve.String("gpt-5.4-mini"),
 		System:  []types.SystemContentBlock{{Text: "You are helpful"}, {Text: "Be concise"}},
 		Messages: []types.Message{{
 			Role:    types.ConversationRoleUser,
@@ -582,8 +582,8 @@ func TestAdditionalModelRequestFields(t *testing.T) {
 		})
 	}
 	client, _ := newTestClient(t, handler)
-	client.Converse(context.Background(), &audacityruntime.ConverseInput{ //nolint:errcheck
-		ModelId:                      audacity.String("gpt-5.4-mini"),
+	client.Converse(context.Background(), &aireserveruntime.ConverseInput{ //nolint:errcheck
+		ModelId:                      aireserve.String("gpt-5.4-mini"),
 		Messages:                     []types.Message{{Role: types.ConversationRoleUser, Content: []types.ContentBlock{&types.ContentBlockMemberText{Value: "hi"}}}},
 		AdditionalModelRequestFields: map[string]interface{}{"custom_field": "custom_value"},
 	})
@@ -594,7 +594,7 @@ func TestAdditionalModelRequestFields(t *testing.T) {
 // ─────────────────────────────────────────────────────────────
 
 func TestMediaResolution(t *testing.T) {
-	captureBody := func(t *testing.T, input *audacityruntime.ConverseInput) map[string]interface{} {
+	captureBody := func(t *testing.T, input *aireserveruntime.ConverseInput) map[string]interface{} {
 		t.Helper()
 		var got map[string]interface{}
 		handler := func(w http.ResponseWriter, r *http.Request) {
@@ -629,8 +629,8 @@ func TestMediaResolution(t *testing.T) {
 			types.MediaResolutionHigh,
 			types.MediaResolutionUltraHigh,
 		} {
-			body := captureBody(t, &audacityruntime.ConverseInput{
-				ModelId:         audacity.String("gemini-2.5-flash"),
+			body := captureBody(t, &aireserveruntime.ConverseInput{
+				ModelId:         aireserve.String("gemini-2.5-flash"),
 				Messages:        messages,
 				MediaResolution: res,
 			})
@@ -641,8 +641,8 @@ func TestMediaResolution(t *testing.T) {
 	})
 
 	t.Run("absent", func(t *testing.T) {
-		body := captureBody(t, &audacityruntime.ConverseInput{
-			ModelId:  audacity.String("gemini-2.5-flash"),
+		body := captureBody(t, &aireserveruntime.ConverseInput{
+			ModelId:  aireserve.String("gemini-2.5-flash"),
 			Messages: messages,
 		})
 		if v, ok := body["media_resolution"]; ok {
@@ -656,7 +656,7 @@ func TestMediaResolution(t *testing.T) {
 // ─────────────────────────────────────────────────────────────
 
 func TestGuardrailConfig(t *testing.T) {
-	captureBody := func(t *testing.T, input *audacityruntime.ConverseInput) map[string]interface{} {
+	captureBody := func(t *testing.T, input *aireserveruntime.ConverseInput) map[string]interface{} {
 		t.Helper()
 		var got map[string]interface{}
 		handler := func(w http.ResponseWriter, r *http.Request) {
@@ -685,12 +685,12 @@ func TestGuardrailConfig(t *testing.T) {
 	}}
 
 	t.Run("forwarded verbatim", func(t *testing.T) {
-		body := captureBody(t, &audacityruntime.ConverseInput{
-			ModelId:  audacity.String("claude-sonnet-4-6"),
+		body := captureBody(t, &aireserveruntime.ConverseInput{
+			ModelId:  aireserve.String("claude-sonnet-4-6"),
 			Messages: messages,
 			GuardrailConfig: &types.GuardrailConfiguration{
-				GuardrailIdentifier:  audacity.String("gr-abc123"),
-				GuardrailVersion:     audacity.String("1"),
+				GuardrailIdentifier:  aireserve.String("gr-abc123"),
+				GuardrailVersion:     aireserve.String("1"),
 				Trace:                types.GuardrailTraceEnabled,
 				StreamProcessingMode: types.GuardrailStreamProcessingModeSync,
 			},
@@ -711,12 +711,12 @@ func TestGuardrailConfig(t *testing.T) {
 	})
 
 	t.Run("absent optional members omitted", func(t *testing.T) {
-		body := captureBody(t, &audacityruntime.ConverseInput{
-			ModelId:  audacity.String("claude-sonnet-4-6"),
+		body := captureBody(t, &aireserveruntime.ConverseInput{
+			ModelId:  aireserve.String("claude-sonnet-4-6"),
 			Messages: messages,
 			GuardrailConfig: &types.GuardrailConfiguration{
-				GuardrailIdentifier: audacity.String("gr-abc123"),
-				GuardrailVersion:    audacity.String("1"),
+				GuardrailIdentifier: aireserve.String("gr-abc123"),
+				GuardrailVersion:    aireserve.String("1"),
 			},
 		})
 		got, ok := body["guardrailConfig"].(map[string]interface{})
@@ -731,8 +731,8 @@ func TestGuardrailConfig(t *testing.T) {
 	})
 
 	t.Run("absent when unset", func(t *testing.T) {
-		body := captureBody(t, &audacityruntime.ConverseInput{
-			ModelId:  audacity.String("claude-sonnet-4-6"),
+		body := captureBody(t, &aireserveruntime.ConverseInput{
+			ModelId:  aireserve.String("claude-sonnet-4-6"),
 			Messages: messages,
 		})
 		if v, ok := body["guardrailConfig"]; ok {

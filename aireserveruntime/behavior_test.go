@@ -1,4 +1,4 @@
-package audacityruntime_test
+package aireserveruntime_test
 
 // behavior_test.go — regression tests for review findings: timeout semantics,
 // NoRetries/NoTimeout sentinels, stream lifecycle (leaks, cancellation,
@@ -17,9 +17,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Audacity-Investments/audacity-sdk-go"
-	"github.com/Audacity-Investments/audacity-sdk-go/audacityruntime"
-	"github.com/Audacity-Investments/audacity-sdk-go/audacityruntime/types"
+	"github.com/Audacity-Investments/aireserve-sdk-go"
+	"github.com/Audacity-Investments/aireserve-sdk-go/aireserveruntime"
+	"github.com/Audacity-Investments/aireserve-sdk-go/aireserveruntime/types"
 )
 
 // ─────────────────────────────────────────────────────────────
@@ -39,9 +39,9 @@ func TestStreamOutlivesTimeout(t *testing.T) {
 	})
 	defer srv.Close()
 
-	client := audacityruntime.New(audacityruntime.Options{
+	client := aireserveruntime.New(aireserveruntime.Options{
 		APIKey: "test-key", BaseURL: srv.URL,
-		MaxRetries: audacityruntime.NoRetries,
+		MaxRetries: aireserveruntime.NoRetries,
 		Timeout:    100 * time.Millisecond,
 	})
 	streamOut, err := client.ConverseStream(context.Background(), streamInput())
@@ -81,14 +81,14 @@ func TestConverseTimeoutCoversBody(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	client := audacityruntime.New(audacityruntime.Options{
+	client := aireserveruntime.New(aireserveruntime.Options{
 		APIKey: "test-key", BaseURL: srv.URL,
-		MaxRetries: audacityruntime.NoRetries,
+		MaxRetries: aireserveruntime.NoRetries,
 		Timeout:    80 * time.Millisecond,
 	})
 	start := time.Now()
-	_, err := client.Converse(context.Background(), &audacityruntime.ConverseInput{
-		ModelId:  audacity.String("gpt-5.4-mini"),
+	_, err := client.Converse(context.Background(), &aireserveruntime.ConverseInput{
+		ModelId:  aireserve.String("gpt-5.4-mini"),
 		Messages: []types.Message{{Role: types.ConversationRoleUser, Content: []types.ContentBlock{&types.ContentBlockMemberText{Value: "hi"}}}},
 	})
 	if err == nil {
@@ -117,8 +117,8 @@ func TestNoRetriesSingleAttempt(t *testing.T) {
 		w.WriteHeader(500)
 		fmt.Fprint(w, `{"error":{"message":"boom","type":"internal_error"}}`)
 	})
-	_, err := client.Converse(context.Background(), &audacityruntime.ConverseInput{
-		ModelId:  audacity.String("gpt-5.4-mini"),
+	_, err := client.Converse(context.Background(), &aireserveruntime.ConverseInput{
+		ModelId:  aireserve.String("gpt-5.4-mini"),
 		Messages: []types.Message{{Role: types.ConversationRoleUser, Content: []types.ContentBlock{&types.ContentBlockMemberText{Value: "hi"}}}},
 	})
 	if err == nil {
@@ -136,11 +136,11 @@ func TestNegativeMaxRetriesDoesNotPanic(t *testing.T) {
 	defer srv.Close()
 
 	// Any negative value (not just the sentinel) must behave like NoRetries.
-	client := audacityruntime.New(audacityruntime.Options{
+	client := aireserveruntime.New(aireserveruntime.Options{
 		APIKey: "test-key", BaseURL: srv.URL, MaxRetries: -7, Timeout: -3,
 	})
-	_, err := client.Converse(context.Background(), &audacityruntime.ConverseInput{
-		ModelId:  audacity.String("gpt-5.4-mini"),
+	_, err := client.Converse(context.Background(), &aireserveruntime.ConverseInput{
+		ModelId:  aireserve.String("gpt-5.4-mini"),
 		Messages: []types.Message{{Role: types.ConversationRoleUser, Content: []types.ContentBlock{&types.ContentBlockMemberText{Value: "hi"}}}},
 	})
 	if err == nil {
@@ -405,7 +405,7 @@ func TestStreamUsageBeforeFinishReason(t *testing.T) {
 
 // captureRequest returns a client whose stub server records the parsed JSON
 // request body into got.
-func captureRequest(t *testing.T, got *map[string]interface{}) *audacityruntime.Client {
+func captureRequest(t *testing.T, got *map[string]interface{}) *aireserveruntime.Client {
 	t.Helper()
 	client, _ := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
 		var req map[string]interface{}
@@ -441,8 +441,8 @@ func TestToolChoiceVariantsSerialization(t *testing.T) {
 			var got map[string]interface{}
 			client := captureRequest(t, &got)
 			desc := "weather"
-			_, err := client.Converse(context.Background(), &audacityruntime.ConverseInput{
-				ModelId:  audacity.String("gpt-5.4-mini"),
+			_, err := client.Converse(context.Background(), &aireserveruntime.ConverseInput{
+				ModelId:  aireserve.String("gpt-5.4-mini"),
 				Messages: []types.Message{{Role: types.ConversationRoleUser, Content: []types.ContentBlock{&types.ContentBlockMemberText{Value: "hi"}}}},
 				ToolConfig: &types.ToolConfiguration{
 					Tools: []types.Tool{{ToolSpec: &types.ToolSpecification{
@@ -465,13 +465,13 @@ func TestToolChoiceVariantsSerialization(t *testing.T) {
 func TestInferenceConfigSerialization(t *testing.T) {
 	var got map[string]interface{}
 	client := captureRequest(t, &got)
-	_, err := client.Converse(context.Background(), &audacityruntime.ConverseInput{
-		ModelId:  audacity.String("gpt-5.4-mini"),
+	_, err := client.Converse(context.Background(), &aireserveruntime.ConverseInput{
+		ModelId:  aireserve.String("gpt-5.4-mini"),
 		Messages: []types.Message{{Role: types.ConversationRoleUser, Content: []types.ContentBlock{&types.ContentBlockMemberText{Value: "hi"}}}},
 		InferenceConfig: &types.InferenceConfiguration{
-			MaxTokens:     audacity.Int32(500),
-			Temperature:   audacity.Float32(0.2),
-			TopP:          audacity.Float32(0.9),
+			MaxTokens:     aireserve.Int32(500),
+			Temperature:   aireserve.Float32(0.2),
+			TopP:          aireserve.Float32(0.9),
 			StopSequences: []string{"END"},
 		},
 	})
@@ -496,11 +496,11 @@ func TestInferenceConfigSerialization(t *testing.T) {
 func TestAdditionalFieldsOverridePrecedence(t *testing.T) {
 	var got map[string]interface{}
 	client := captureRequest(t, &got)
-	_, err := client.Converse(context.Background(), &audacityruntime.ConverseInput{
-		ModelId:  audacity.String("gpt-5.4-mini"),
+	_, err := client.Converse(context.Background(), &aireserveruntime.ConverseInput{
+		ModelId:  aireserve.String("gpt-5.4-mini"),
 		Messages: []types.Message{{Role: types.ConversationRoleUser, Content: []types.ContentBlock{&types.ContentBlockMemberText{Value: "hi"}}}},
 		InferenceConfig: &types.InferenceConfiguration{
-			MaxTokens: audacity.Int32(500),
+			MaxTokens: aireserve.Int32(500),
 		},
 		// Shallow-merged LAST (spec §3 rule 6): must override max_tokens.
 		AdditionalModelRequestFields: map[string]interface{}{
@@ -524,11 +524,11 @@ func TestAdditionalFieldsOverridePrecedence(t *testing.T) {
 // ─────────────────────────────────────────────────────────────
 
 func TestImageBlockNilSourceValidation(t *testing.T) {
-	client := audacityruntime.New(audacityruntime.Options{
-		APIKey: "test-key", BaseURL: "http://127.0.0.1:0", MaxRetries: audacityruntime.NoRetries,
+	client := aireserveruntime.New(aireserveruntime.Options{
+		APIKey: "test-key", BaseURL: "http://127.0.0.1:0", MaxRetries: aireserveruntime.NoRetries,
 	})
-	_, err := client.Converse(context.Background(), &audacityruntime.ConverseInput{
-		ModelId: audacity.String("gpt-5.4-mini"),
+	_, err := client.Converse(context.Background(), &aireserveruntime.ConverseInput{
+		ModelId: aireserve.String("gpt-5.4-mini"),
 		Messages: []types.Message{{
 			Role: types.ConversationRoleUser,
 			Content: []types.ContentBlock{

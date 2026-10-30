@@ -1,4 +1,4 @@
-package audacityruntime
+package aireserveruntime
 
 // compat_stream.go — raw SSE event stream for the §9 pass-through surfaces.
 //

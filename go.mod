@@ -1,3 +1,3 @@
-module github.com/Audacity-Investments/audacity-sdk-go
+module github.com/Audacity-Investments/aireserve-sdk-go
 
 go 1.22

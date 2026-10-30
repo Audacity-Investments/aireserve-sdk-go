@@ -1,4 +1,4 @@
-package audacityruntime_test
+package aireserveruntime_test
 
 // upload_test.go — conformance checklist item 14 (upload half): the
 // UploadFile helper's POST /v1/files ticket step plus the GCS
@@ -18,8 +18,8 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/Audacity-Investments/audacity-sdk-go/audacityruntime"
-	"github.com/Audacity-Investments/audacity-sdk-go/audacityruntime/types"
+	"github.com/Audacity-Investments/aireserve-sdk-go/aireserveruntime"
+	"github.com/Audacity-Investments/aireserve-sdk-go/aireserveruntime/types"
 )
 
 // testChunkSize is the shrunken chunk size (512 KiB — must stay a multiple
@@ -64,9 +64,9 @@ func resumableUploadServer(t *testing.T, put http.HandlerFunc) *httptest.Server 
 	return srv
 }
 
-func newUploadClient(srvURL string) *audacityruntime.Client {
-	return audacityruntime.New(audacityruntime.Options{
-		APIKey: "test-key", BaseURL: srvURL, MaxRetries: audacityruntime.NoRetries,
+func newUploadClient(srvURL string) *aireserveruntime.Client {
+	return aireserveruntime.New(aireserveruntime.Options{
+		APIKey: "test-key", BaseURL: srvURL, MaxRetries: aireserveruntime.NoRetries,
 	})
 }
 
@@ -75,7 +75,7 @@ func newUploadClient(srvURL string) *audacityruntime.Client {
 // Content-Type, no Authorization, empty body), every Content-Range, the
 // 308→200 protocol, and byte-exact reassembly.
 func TestUploadFileResumableHappyPath(t *testing.T) {
-	restore := audacityruntime.SetUploadChunkSizeForTest(testChunkSize)
+	restore := aireserveruntime.SetUploadChunkSizeForTest(testChunkSize)
 	defer restore()
 
 	total := 262144 * 5 // 1.25 MiB → chunks of 512 KiB, 512 KiB, 256 KiB
@@ -147,7 +147,7 @@ func TestUploadFileResumableHappyPath(t *testing.T) {
 	}))
 	t.Cleanup(srv.Close)
 
-	out, err := newUploadClient(srv.URL).UploadFile(context.Background(), &audacityruntime.UploadFileInput{
+	out, err := newUploadClient(srv.URL).UploadFile(context.Background(), &aireserveruntime.UploadFileInput{
 		Data:        data,
 		ContentType: "video/mp4",
 	})
@@ -207,9 +207,9 @@ func TestUploadFileResumableHappyPath(t *testing.T) {
 // Range, and asserts the upload resumes from the confirmed offset and
 // completes byte-exact.
 func TestUploadFileResumesAfterTransientFailure(t *testing.T) {
-	restoreChunk := audacityruntime.SetUploadChunkSizeForTest(testChunkSize)
+	restoreChunk := aireserveruntime.SetUploadChunkSizeForTest(testChunkSize)
 	defer restoreChunk()
-	restoreBackoff := audacityruntime.DisableUploadBackoffForTest()
+	restoreBackoff := aireserveruntime.DisableUploadBackoffForTest()
 	defer restoreBackoff()
 
 	total := 262144 * 4 // 1 MiB → two 512 KiB chunks
@@ -259,7 +259,7 @@ func TestUploadFileResumesAfterTransientFailure(t *testing.T) {
 		w.WriteHeader(200)
 	})
 
-	_, err := newUploadClient(srv.URL).UploadFile(context.Background(), &audacityruntime.UploadFileInput{
+	_, err := newUploadClient(srv.URL).UploadFile(context.Background(), &aireserveruntime.UploadFileInput{
 		Data:        data,
 		ContentType: "video/mp4",
 	})
@@ -298,9 +298,9 @@ func TestUploadFileResumesAfterTransientFailure(t *testing.T) {
 // and asserts the upload gives up after the bounded budget: the initial
 // chunk plus 5 recovery attempts (offset queries), then the mapped error.
 func TestUploadFileRecoveryExhaustion(t *testing.T) {
-	restoreChunk := audacityruntime.SetUploadChunkSizeForTest(testChunkSize)
+	restoreChunk := aireserveruntime.SetUploadChunkSizeForTest(testChunkSize)
 	defer restoreChunk()
-	restoreBackoff := audacityruntime.DisableUploadBackoffForTest()
+	restoreBackoff := aireserveruntime.DisableUploadBackoffForTest()
 	defer restoreBackoff()
 
 	var (
@@ -315,7 +315,7 @@ func TestUploadFileRecoveryExhaustion(t *testing.T) {
 		w.WriteHeader(500)
 	})
 
-	_, err := newUploadClient(srv.URL).UploadFile(context.Background(), &audacityruntime.UploadFileInput{
+	_, err := newUploadClient(srv.URL).UploadFile(context.Background(), &aireserveruntime.UploadFileInput{
 		Data:        patternedBytes(1000),
 		ContentType: "video/mp4",
 	})
@@ -354,7 +354,7 @@ func TestUploadFileSmallFileSingleShot(t *testing.T) {
 		w.WriteHeader(200)
 	})
 
-	_, err := newUploadClient(srv.URL).UploadFile(context.Background(), &audacityruntime.UploadFileInput{
+	_, err := newUploadClient(srv.URL).UploadFile(context.Background(), &aireserveruntime.UploadFileInput{
 		Data:        data,
 		ContentType: "video/mp4",
 	})
@@ -392,10 +392,10 @@ func TestUploadFileChunk403FailsImmediately(t *testing.T) {
 	})
 
 	// Retries enabled — a chunk 4xx must still fail on the first attempt.
-	client := audacityruntime.New(audacityruntime.Options{
+	client := aireserveruntime.New(aireserveruntime.Options{
 		APIKey: "test-key", BaseURL: srv.URL, MaxRetries: 3,
 	})
-	_, err := client.UploadFile(context.Background(), &audacityruntime.UploadFileInput{
+	_, err := client.UploadFile(context.Background(), &aireserveruntime.UploadFileInput{
 		Data:        patternedBytes(100),
 		ContentType: "video/mp4",
 	})
@@ -422,10 +422,10 @@ func TestUploadFileStep1ValidationError(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	client := audacityruntime.New(audacityruntime.Options{
-		APIKey: "test-key", BaseURL: srv.URL, MaxRetries: audacityruntime.NoRetries,
+	client := aireserveruntime.New(aireserveruntime.Options{
+		APIKey: "test-key", BaseURL: srv.URL, MaxRetries: aireserveruntime.NoRetries,
 	})
-	_, err := client.UploadFile(context.Background(), &audacityruntime.UploadFileInput{
+	_, err := client.UploadFile(context.Background(), &aireserveruntime.UploadFileInput{
 		Data:        []byte("x"),
 		ContentType: "video/mp4",
 	})

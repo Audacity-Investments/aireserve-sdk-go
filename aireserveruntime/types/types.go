@@ -1,4 +1,4 @@
-// Package types contains all public types for the Audacity runtime client,
+// Package types contains all public types for the AI Reserve runtime client,
 // matching the Amazon Bedrock Converse API shapes.
 package types
 
@@ -61,7 +61,7 @@ type ImageSourceMemberBytes struct {
 
 func (*ImageSourceMemberBytes) isImageSource() {}
 
-// ImageSourceMemberUrl carries an https or data URL (Audacity extension).
+// ImageSourceMemberUrl carries an https or data URL (AI Reserve extension).
 type ImageSourceMemberUrl struct {
 	Value string
 }

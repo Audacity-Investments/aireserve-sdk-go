@@ -1,4 +1,4 @@
-package audacityruntime
+package aireserveruntime
 
 // compat.go — provider-native pass-through surfaces (spec §9).
 //
@@ -20,7 +20,7 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/Audacity-Investments/audacity-sdk-go/audacityruntime/types"
+	"github.com/Audacity-Investments/aireserve-sdk-go/aireserveruntime/types"
 )
 
 // anthropicVersion is the Anthropic API version header sent on the two

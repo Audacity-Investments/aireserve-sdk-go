@@ -1,4 +1,4 @@
-package audacityruntime
+package aireserveruntime
 
 // errors.go — error-body parsing (shapes A and B) and the code→exception mapping table
 // from spec §4.
@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Audacity-Investments/audacity-sdk-go/audacityruntime/types"
+	"github.com/Audacity-Investments/aireserve-sdk-go/aireserveruntime/types"
 )
 
 // ─────────────────────────────────────────────────────────────

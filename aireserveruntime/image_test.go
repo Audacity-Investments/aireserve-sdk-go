@@ -1,4 +1,4 @@
-package audacityruntime_test
+package aireserveruntime_test
 
 // image_test.go — conformance checklist item 11: image content blocks.
 // Mirrors the Python reference tests (TestImageBlocks in test_sdk.py).
@@ -11,9 +11,9 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/Audacity-Investments/audacity-sdk-go"
-	"github.com/Audacity-Investments/audacity-sdk-go/audacityruntime"
-	"github.com/Audacity-Investments/audacity-sdk-go/audacityruntime/types"
+	"github.com/Audacity-Investments/aireserve-sdk-go"
+	"github.com/Audacity-Investments/aireserve-sdk-go/aireserveruntime"
+	"github.com/Audacity-Investments/aireserve-sdk-go/aireserveruntime/types"
 )
 
 // captureMessages runs Converse with the given messages against a stub server
@@ -38,8 +38,8 @@ func captureMessages(t *testing.T, messages []types.Message) []interface{} {
 		})
 	}
 	client, _ := newTestClient(t, handler)
-	_, err := client.Converse(context.Background(), &audacityruntime.ConverseInput{
-		ModelId:  audacity.String("gpt-5.5"),
+	_, err := client.Converse(context.Background(), &aireserveruntime.ConverseInput{
+		ModelId:  aireserve.String("gpt-5.5"),
 		Messages: messages,
 	})
 	if err != nil {

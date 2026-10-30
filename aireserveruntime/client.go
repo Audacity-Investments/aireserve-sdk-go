@@ -1,7 +1,7 @@
-// Package audacityruntime provides the Audacity API client with an Amazon Bedrock
+// Package aireserveruntime provides the AI Reserve API client with an Amazon Bedrock
 // Converse–shaped surface, translating Bedrock-style inputs/outputs to the
-// Audacity OpenAI-compatible endpoint.
-package audacityruntime
+// AI Reserve OpenAI-compatible endpoint.
+package aireserveruntime
 
 import (
 	"net/http"
@@ -10,11 +10,11 @@ import (
 )
 
 const (
-	defaultBaseURL    = "https://api.audacityinvestments.com"
+	defaultBaseURL    = "https://api.aireserve.com"
 	defaultTimeout    = 120 * time.Second
 	defaultMaxRetries = 2
-	sdkVersion        = "0.6.0"
-	userAgent         = "audacity-sdk-go/" + sdkVersion
+	sdkVersion        = "0.7.0"
+	userAgent         = "aireserve-sdk-go/" + sdkVersion
 )
 
 // NoTimeout disables the request timeout entirely.  Any negative Timeout
@@ -39,7 +39,7 @@ type Options struct {
 
 	// BaseURL overrides the default API endpoint.
 	// Falls back to AIRESERVE_BASE_URL (legacy AUDACITY_BASE_URL), then
-	// https://api.audacityinvestments.com.
+	// https://api.aireserve.com.
 	BaseURL string
 
 	// HTTPClient replaces the default http.Client.  The SDK never sets
@@ -62,7 +62,7 @@ type Options struct {
 	Timeout time.Duration
 }
 
-// Client is the Audacity runtime API client.
+// Client is the AI Reserve runtime API client.
 type Client struct {
 	options    Options
 	httpClient *http.Client

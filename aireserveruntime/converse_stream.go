@@ -1,4 +1,4 @@
-package audacityruntime
+package aireserveruntime
 
 // converse_stream.go — ConverseStream operation, SSE reader, and the §3 state machine.
 
@@ -12,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Audacity-Investments/audacity-sdk-go/audacityruntime/types"
+	"github.com/Audacity-Investments/aireserve-sdk-go/aireserveruntime/types"
 )
 
 // ────────────────────────────────────────────────────────────────────────────

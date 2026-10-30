@@ -1,4 +1,4 @@
-package audacityruntime
+package aireserveruntime
 
 // upload.go — the file-upload helper (spec §6): a POST to /v1/files for a
 // presigned upload ticket, then the GCS resumable-session protocol against
@@ -18,7 +18,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Audacity-Investments/audacity-sdk-go/audacityruntime/types"
+	"github.com/Audacity-Investments/aireserve-sdk-go/aireserveruntime/types"
 )
 
 const (
