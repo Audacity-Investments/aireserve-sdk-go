@@ -663,3 +663,25 @@ timeout bounds the entire response body and will kill long streams mid-generatio
 ## License
 
 Copyright AI Reserve. All rights reserved.
+
+## GPU infrastructure (`client.Gpu`, 0.8.0+)
+
+Provider-hidden GPU instances, multi-node clusters, persistent volumes, SSH
+keys, registries, templates, operations and usage over `/v1/gpu` (SPEC §10 in
+the `aireserve-sdk` repository). You name an accelerator and a USD/hour
+ceiling; AI Reserve picks the placement and never names the provider.
+
+```go
+client := aireserveruntime.New(aireserveruntime.Options{})
+quote, err := client.Gpu.Instances.Quote(ctx, &aireserveruntime.InstanceRequest{Accelerator: "H100_80GB", Region: "united_states"})
+op, err := client.Gpu.Instances.Launch(ctx, &aireserveruntime.InstanceRequest{QuoteID: quote.QuoteID, SSHPublicKey: key})
+instance, err := op.Wait(ctx, nil)
+conn, err := client.Gpu.Instances.Connections(ctx, instance.ID)
+_, err = client.Gpu.Instances.Terminate(ctx, instance.ID, nil)
+```
+
+Refusals are typed: `*types.NoCapacityError` (`Reason`, `CheapestEligibleUsdPerHour`,
+`Alternatives`), `*types.QuoteExpiredError`, `*types.PriceChangedError`; a
+failed operation's `*types.OperationFailedError` carries the gateway's
+structured `Failure`. The tests replay the shared fixture corpus at
+`fixtures/gpu/exchanges.json`.

@@ -13,7 +13,7 @@ const (
 	defaultBaseURL    = "https://api.aireserve.com"
 	defaultTimeout    = 120 * time.Second
 	defaultMaxRetries = 2
-	sdkVersion        = "0.7.0"
+	sdkVersion        = "0.8.0"
 	userAgent         = "aireserve-sdk-go/" + sdkVersion
 )
 
@@ -77,6 +77,12 @@ type Client struct {
 	// the request body verbatim to POST /v1/messages and
 	// POST /v1/messages/count_tokens.
 	Messages *MessagesService
+
+	// Gpu is the provider-hidden GPU infrastructure surface (spec §10):
+	// Gpu.Offers, Gpu.Instances, Gpu.Clusters, Gpu.Volumes, Gpu.SshKeys,
+	// Gpu.Registries, Gpu.Templates, Gpu.Operations and Gpu.Usage over
+	// /v1/gpu. Nothing here accepts or returns a provider identity.
+	Gpu *GpuService
 }
 
 // New creates a Client from the provided Options, applying environment-variable
@@ -125,5 +131,6 @@ func New(opts Options) *Client {
 	}
 	c.Chat = &ChatService{Completions: &ChatCompletionsService{client: c}}
 	c.Messages = &MessagesService{client: c}
+	c.Gpu = newGpuService(c)
 	return c
 }

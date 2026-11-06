@@ -145,6 +145,25 @@ func codeToException(rawCode string, statusCode int, base types.APIError) (error
 	code := strings.ToLower(rawCode)
 
 	switch code {
+	// GPU compute control plane (spec §10).
+	case "no_capacity":
+		return noCapacityError(base), true
+	case "quote_expired":
+		return &types.QuoteExpiredError{APIError: base}, true
+	case "price_changed":
+		return &types.PriceChangedError{APIError: base}, true
+	case "operation_conflict", "volume_in_use", "invalid_input":
+		return &types.ValidationException{APIError: base}, true
+	case "insufficient_funds", "quota_exceeded":
+		return &types.ServiceQuotaExceededException{APIError: base}, true
+	case "compute_access_required":
+		return &types.AccessDeniedException{APIError: base}, true
+	case "not_found":
+		return &types.ResourceNotFoundException{APIError: base}, true
+	case "compute_disabled", "provider_unavailable":
+		base.Retryable = true
+		return &types.ServiceUnavailableException{APIError: base}, true
+
 	case "invalid_api_key", "api_key_required", "authentication_error",
 		"authorization_error", "model_not_allowed":
 		return &types.AccessDeniedException{APIError: base}, true
@@ -237,4 +256,24 @@ func parseStreamError(raw json.RawMessage) error {
 		base.ErrorCode = "STREAM_ERROR"
 	}
 	return &types.ModelStreamErrorException{ModelErrorException: types.ModelErrorException{APIError: base}}
+}
+
+// noCapacityError lifts the `no_capacity` details object into typed fields.
+func noCapacityError(base types.APIError) *types.NoCapacityError {
+	out := &types.NoCapacityError{APIError: base}
+	raw, err := json.Marshal(base.Details)
+	if err != nil || base.Details == nil {
+		return out
+	}
+	var details struct {
+		Reason                     string                        `json:"reason"`
+		CheapestEligibleUsdPerHour string                        `json:"cheapestEligibleUsdPerHour"`
+		Alternatives               []types.NoCapacityAlternative `json:"alternatives"`
+	}
+	if json.Unmarshal(raw, &details) == nil {
+		out.Reason = details.Reason
+		out.CheapestEligibleUsdPerHour = details.CheapestEligibleUsdPerHour
+		out.Alternatives = details.Alternatives
+	}
+	return out
 }
