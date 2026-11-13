@@ -123,3 +123,65 @@ func (e *SdkError) Error() string {
 }
 
 func (e *SdkError) Unwrap() error { return e.Err }
+
+// NoCapacityError is `409 no_capacity` on a GPU quote, launch or grow (spec
+// §10): the request cannot be satisfied right now and nothing was created or
+// charged. Reason says why (no_stock, price_ceiling, volume_location,
+// no_persistent_storage); Alternatives what would work. Never names a provider.
+type NoCapacityError struct {
+	APIError
+	Reason                     string
+	CheapestEligibleUsdPerHour string
+	Alternatives               []NoCapacityAlternative
+}
+
+// NoCapacityAlternative is the cheapest eligible running price in another region.
+type NoCapacityAlternative struct {
+	Region                 *string `json:"region"`
+	TotalRunningUsdPerHour string  `json:"totalRunningUsdPerHour"`
+}
+
+func (e *NoCapacityError) Unwrap() error { return &e.APIError }
+
+// QuoteExpiredError is `409 quote_expired`: the quote's ten minutes are up.
+type QuoteExpiredError struct{ APIError }
+
+func (e *QuoteExpiredError) Unwrap() error { return &e.APIError }
+
+// PriceChangedError is `409 price_changed`: the price moved between the
+// quote and the accept, or the request no longer matches what was quoted.
+type PriceChangedError struct{ APIError }
+
+func (e *PriceChangedError) Unwrap() error { return &e.APIError }
+
+// OperationFailure is the gateway's structured reading of a failed GPU
+// operation: whose action it is and what to do next.
+type OperationFailure struct {
+	Code    string `json:"code"`
+	Actor   string `json:"actor"`
+	Message string `json:"message"`
+	Next    string `json:"next"`
+}
+
+// OperationFailedError is returned by Wait when an accepted GPU mutation
+// reached failed or cancelled. Failure is nil when the gateway gave none.
+type OperationFailedError struct {
+	OperationID string
+	Message     string
+	Failure     *OperationFailure
+}
+
+func (e *OperationFailedError) Error() string {
+	return fmt.Sprintf("GPU operation %s failed: %s", e.OperationID, e.Message)
+}
+
+// OperationTimeoutError is returned by Wait when the operation did not reach a
+// terminal status within the timeout.
+type OperationTimeoutError struct {
+	OperationID string
+	Timeout     string
+}
+
+func (e *OperationTimeoutError) Error() string {
+	return fmt.Sprintf("GPU operation %s did not finish within %s", e.OperationID, e.Timeout)
+}
